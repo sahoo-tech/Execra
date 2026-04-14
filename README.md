@@ -845,7 +845,7 @@ Special thanks to:
 
 <br/>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=120&section=footer&text=Happy%20Contributing!&fontSize=40&fontColor=ffffff&animation=fadeIn" width="100%" alt="Footer"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=120&section=footer&text=Happy%20Contributing%21&fontSize=40&fontColor=ffffff&animation=fadeIn" width="100%" alt="Footer"/>
 
 </div>
 
