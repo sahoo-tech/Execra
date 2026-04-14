@@ -36,29 +36,29 @@
 
 ---
 
-## 🏷️ Points & Difficulty Guide
+## 🏷️ Difficulty Guide
 
-| Badge | Difficulty | Points | Best For |
-|-------|-----------|--------|---------|
-| ⭐ `good first issue` | Beginner | **10 pts** | Comfortable with Python basics, setting up boilerplate and config |
-| ⭐⭐ `easy` | Easy | **25 pts** | Can write a module/file independently with some guidance |
-| ⭐⭐⭐ `medium` | Medium | **45 pts** | Comfortable designing and building a full feature |
-| ⭐⭐⭐⭐ `hard` | Expert | **60 pts** | Can architect complex systems, integrate multiple components |
+| Badge | Difficulty | Best For |
+|-------|-----------|----------|
+| ⭐ `good first issue` | Beginner | Comfortable with Python basics, setting up boilerplate and config |
+| ⭐⭐ `easy` | Easy | Can write a module/file independently with some guidance |
+| ⭐⭐⭐ `medium` | Medium | Comfortable designing and building a full feature |
+| ⭐⭐⭐⭐ `hard` | Expert | Can architect complex systems, integrate multiple components |
 
 ---
 
 ## 📑 Jump to a Section
 
-- [⭐ Beginner — Project Setup & Boilerplate](#-beginner-issues--10-pts-each)
-- [⭐⭐ Easy — Core Modules (First Implementation)](#-easy-issues--25-pts-each)
-- [⭐⭐⭐ Medium — Feature Modules (Complex Implementation)](#-medium-issues--45-pts-each)
-- [⭐⭐⭐⭐ Hard — System Integration & Advanced Engines](#-hard--expert-issues--60-pts-each)
+- [⭐ Beginner — Project Setup & Boilerplate](#-beginner-issues)
+- [⭐⭐ Easy — Core Modules (First Implementation)](#-easy-issues)
+- [⭐⭐⭐ Medium — Feature Modules (Complex Implementation)](#-medium-issues)
+- [⭐⭐⭐⭐ Hard — System Integration & Advanced Engines](#-hard--expert-issues)
 
 ---
 
 ---
 
-## ⭐ Beginner Issues — 10 pts each
+## ⭐ Beginner Issues
 
 > These are **foundational coding tasks** — scaffolding, configuration, and boilerplate that every other module depends on. Even as a beginner, your work here directly unblocks all other contributors.
 
@@ -310,7 +310,7 @@ Two modules (context engine and action logger) write to SQLite. Create the datab
 
 ---
 
-## ⭐⭐ Easy Issues — 25 pts each
+## ⭐⭐ Easy Issues
 
 > These are **first implementations of real modules**. Each one produces a working, tested Python file that other contributors can immediately build on top of.
 
@@ -452,18 +452,6 @@ Build the two read-only REST endpoints that the frontend overlay will poll to di
 
 ### 🔵 #17 — Implement `action_logger.py` — Action Recording & Undo Stack
 
-**Labels:** `easy` `enhancement` `gssoc-2026`
-
-Build the module that records every user action to SQLite and maintains an in-memory undo stack. This powers session history and the undo feature.
-
-**What you'll code:**
-- Create `core/hybrid/action_logger.py`
-- Implement `ActionLogger` class:
-  - `log_action(action: ActionRecord) -> None` — saves to SQLite `action_log` table AND an in-memory `deque` (max size: 50)
-  - `undo_last() -> ActionRecord | None` — pops last action from the stack, returns it (caller handles the actual undo)
-  - `get_history(limit: int = 20, offset: int = 0) -> list[ActionRecord]` — async query from SQLite with pagination
-  - `clear_session(session_id: str) -> None` — deletes all actions for the session from SQLite and clears the in-memory stack
-- Write unit tests mocking SQLite operations
 
 **Skills needed:** Python · SQLite · `aiosqlite` · `collections.deque`
 
@@ -537,7 +525,7 @@ Now that the beginner issues (#1–#10) are complete, their unit tests need to b
 
 ---
 
-## ⭐⭐⭐ Medium Issues — 45 pts each
+## ⭐⭐⭐ Medium Issues
 
 > These require **designing and building a complete feature** — including the core logic, integration with other modules, and tests. Read `docs/architecture.md` carefully before picking one.
 
@@ -784,7 +772,7 @@ The Perception Bus is the single entry point that receives frames from screen ca
 
 ---
 
-## ⭐⭐⭐⭐ Hard / Expert Issues — 60 pts each
+## ⭐⭐⭐⭐ Hard / Expert Issues
 
 > These require **deep technical knowledge and end-to-end system thinking**. You will architect and build complex components that connect multiple modules together. Read all of `docs/architecture.md` before picking any of these.
 
@@ -1046,13 +1034,13 @@ Build a complete undo system where users can reverse the last guided action, plu
 
 ## 📊 Issues at a Glance
 
-| Level | Count | Points Each | Total Possible |
-|-------|-------|------------|---------------|
-| ⭐ Beginner | 10 issues | 10 pts | 100 pts |
-| ⭐⭐ Easy | 10 issues | 25 pts | 250 pts |
-| ⭐⭐⭐ Medium | 10 issues | 45 pts | 450 pts |
-| ⭐⭐⭐⭐ Hard/Expert | 10 issues | 60 pts | 600 pts |
-| **Total** | **40 issues** | | **1,400 pts** |
+| Level | Count |
+|-------|-------|
+| ⭐ Beginner | 10 issues |
+| ⭐⭐ Easy | 10 issues |
+| ⭐⭐⭐ Medium | 10 issues |
+| ⭐⭐⭐⭐ Hard/Expert | 10 issues |
+| **Total** | **40 issues** |
 
 ---
 
