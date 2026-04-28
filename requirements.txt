@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pyautogui
+mss
+pillow
+opencv-python
+pytesseract
+ultralytics
+openai
+google-generativeai
+langchain
+aiosqlite
+redis
+plyer
+python-dotenv
+numpy
+pydantic
