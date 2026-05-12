@@ -17,7 +17,9 @@ class ModeManager:
 
     def switch_mode(self, mode: str) -> None:
         if mode not in VALID_MODES:
-            raise ValueError(f"Invalid mode: {mode}")
+            raise ValueError(
+                f"Invalid mode: {mode}. Allowed values: {', '.join(VALID_MODES)}"
+            )
         if mode == self.current_mode:
             return
         self.current_mode = mode
