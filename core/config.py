@@ -5,10 +5,8 @@ All modules should import settings from here instead of using os.getenv() direct
 
 import os
 from dataclasses import dataclass
-from typing import Optional
 
 from dotenv import load_dotenv
-
 
 # Load .env file at module import time
 load_dotenv()
@@ -90,7 +88,7 @@ class Settings:
             "OPENAI_API_KEY": self.OPENAI_API_KEY,
             "GEMINI_API_KEY": self.GEMINI_API_KEY,
         }
-        
+
         missing = [key for key, value in required_fields.items() if not value]
         if missing:
             raise ValueError(f"Missing required configuration: {', '.join(missing)}")

@@ -623,7 +623,7 @@ We're thrilled to have you here! Execra is an **open project** built for and by 
 
 ```
                     YOUR CONTRIBUTION JOURNEY
-                    
+
     ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
     │  FIND   │───►│  FORK   │───►│  CODE   │───►│  PR     │
     │ an Issue│    │  Repo   │    │  & Test │    │Submitted│

@@ -54,16 +54,16 @@ This project adheres to [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR
 ## [0.2.0] — YYYY-MM-DD
 
 ### Added
-- 
+-
 
 ### Changed
-- 
+-
 
 ### Fixed
-- 
+-
 
 ### Security
-- 
+-
 -->
 
 ---
