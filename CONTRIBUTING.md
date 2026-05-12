@@ -172,6 +172,9 @@ pip install -r requirements.txt
 # 7. Install development dependencies (linters, formatters, test tools)
 pip install -r requirements-dev.txt
 
+# 7.1. Enable pre-commit hooks
+pre-commit install
+
 # 8. Install frontend dependencies
 cd frontend
 npm install
@@ -189,6 +192,21 @@ python -m pytest tests/
 
 # 12. Start Execra locally
 python main.py
+```
+### Pre-commit Hooks
+
+Execra uses pre-commit hooks to catch formatting, linting, YAML, whitespace, and type-checking issues before they reach CI.
+
+After installing development dependencies, enable the hooks once:
+
+```bash
+pre-commit install
+```
+
+To run all hooks manually before opening a pull request:
+
+```bash
+pre-commit run --all-files
 ```
 
 ### Docker Setup (Alternative)
