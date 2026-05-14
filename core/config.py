@@ -37,6 +37,7 @@ class Settings:
 
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
+    REDIS_AUTH: Optional[str] = None
 
     # Trust Score Weights
     TRUST_SCORE_W1: float = 0.5
@@ -70,8 +71,10 @@ class Settings:
             self.LOG_LEVEL = env_val
 
         # Redis Configuration
-        if env_val := os.getenv("REDIS_URL"):
-            self.REDIS_URL = env_val
+        if val := os.getenv("REDIS_URL"):
+            self.REDIS_URL = val
+        if val := os.getenv("REDIS_PASSWORD"):
+            self.REDIS_AUTH = val
 
         # Trust Score Weights
         if env_val := os.getenv("TRUST_SCORE_W1"):

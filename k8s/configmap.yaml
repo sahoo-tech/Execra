@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: execra-config
+  namespace: execra
+data:
+  LLM_BACKEND: "gpt-4o"
+  SCREEN_CAPTURE_FPS: "2"
+  DETECTION_THRESHOLD: "0.5"
+  DELTA_THRESHOLD: "0.05"
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  LOG_LEVEL: "INFO"
+  TRUST_SCORE_W1: "0.5"
+  TRUST_SCORE_W2: "0.3"
+  TRUST_SCORE_W3: "0.2"

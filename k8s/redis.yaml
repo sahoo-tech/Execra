@@ -1,0 +1,71 @@
+# --- Redis Deployment ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: execra-redis
+  namespace: execra
+  labels:
+    app.kubernetes.io/name: execra-redis
+    app.kubernetes.io/component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: execra-redis
+  template:
+    metadata:
+      labels:
+        app: execra-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command: ["redis-server"]
+          args: ["--requirepass", "$(REDIS_PASSWORD)", "--appendonly", "yes"]
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            allowPrivilegeEscalation: false
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: execra-secrets
+                  key: REDIS_PASSWORD
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "redis-cli -a $REDIS_PASSWORD ping"]
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "redis-cli -a $REDIS_PASSWORD ping"]
+            periodSeconds: 5
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+---
+# --- Redis Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: execra-redis
+  namespace: execra
+spec:
+  type: ClusterIP
+  selector:
+    app: execra-redis
+  ports:
+    - port: 6379
+      targetPort: 6379
