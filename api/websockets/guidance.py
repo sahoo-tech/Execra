@@ -2,7 +2,7 @@ from typing import Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from core.hybrid.mode_manager import ModeManager
 
-router = APIRouter();
+router = APIRouter()
 
 class ConnectionManager:
     # Will manage the active Websocket Connection
@@ -34,3 +34,96 @@ class ConnectionManager:
         
         for connection in disconnected_connections:
             self.disconnect(connection)
+
+manager = ConnectionManager()
+
+@router.websocket("/ws/guidance")
+async def guidance_websocket(websocket: WebSocket) -> None:
+    # main execra guidance communication endpoint
+    await manager.connect(websocket)
+    await manager.send_personal(
+        {
+            "event": "connected",
+            "payload": {
+                "status" : "ok",
+            },
+        },
+        websocket,
+    )
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            event = data.get("event")
+            payload = data.get("payload", {})
+            
+            if event == "user_action":
+                print(f"User Action received: {payload}")
+
+            elif event == "ask":
+                question = payload.get("question", "")
+
+                await manager.send_personal(
+                    {
+                        "event": "guidance",
+                        "payload": {
+                            "instruction" : (
+                                f"Analyzing request: {question}"
+                            ),
+                            "confidence" : 0.87,
+                            "source": [
+                                "llm",
+                                "rule_engine",
+                            ],
+                            "reasoning": (
+                                "Generated based on user query."
+                            ),
+                            "mode" : "safe",
+                            "step" : 1,
+                            "total_steps": 3,
+                        },
+                    },
+                    websocket,
+                )
+
+            elif event == "mode_switch":
+                mode = payload.get("mode")
+                ModeManager.switch_mode(mode)
+
+                await manager.broadcast(
+                    {
+                        "event": "mode_switch",
+                        "payload": {
+                            "mode": mode,
+                        },
+                    }
+                )
+
+            else:
+                await manager.send_personal(
+                    {
+                        "event": "error",
+                        "payload": {
+                            "message": (
+                                f"Unknown event type: {event}"
+                            ),
+                        },
+                    },
+                    websocket,
+                )
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+    except Exception as exc:
+        await manager.send_personal(
+            {
+                "event": "error",
+                "payload": {
+                    "message": str(exc),
+                },
+            },
+            websocket,
+        )
+
+        manager.disconnect(websocket)
