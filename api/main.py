@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from api.websockets.guidance import router as guidance_router
+
+
 
 app = FastAPI(
     title="Execra API",
@@ -7,6 +10,7 @@ app = FastAPI(
     description="Execra backend API"
 )
 
+app.include_router(guidance_router)
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
