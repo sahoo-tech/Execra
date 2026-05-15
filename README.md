@@ -509,33 +509,13 @@ venv\Scripts\activate            # Windows
 # 3. Install Python dependencies
 pip install -r requirements.txt
 
-# 4. Install frontend dependencies
-cd frontend
-npm install
-cd ..
-
-# 5. Set up environment variables
+# 4. Set up environment variables
 cp .env.example .env
-# Edit .env and add your API keys (OpenAI / Gemini)
+# Edit .env and add required API keys
 
-# 6. Download YOLO model weights
-python scripts/download_models.py
-
-# 7. Run Execra
-python main.py
+# 5. Run the FastAPI application
+uvicorn api.main:app --reload
 ```
-
-### Quick Start (Docker)
-
-```bash
-# Build and run with Docker Compose
-docker-compose up --build
-
-# Execra will be running at:
-# API:      http://localhost:8000
-# Frontend: http://localhost:3000
-```
-
 ---
 
 ## 📂 Project Structure
@@ -568,21 +548,12 @@ execra/
 │   └── hybrid/
 │       ├── mode_manager.py          # Passive/Active mode switcher
 │       ├── action_logger.py         # Undo/Recovery stack
-│       └── guidance_dispatcher.py  # Instruction delivery
-│
-├── 📁 frontend/
-│   ├── overlay/                     # Desktop overlay UI
-│   ├── panel/                       # Main guidance panel
-│   └── components/                  # Reusable UI components
+│       └── guidance_dispatcher.py   # Instruction delivery
 │
 ├── 📁 api/
 │   ├── main.py                      # FastAPI application
 │   ├── routes/                      # API endpoints
 │   └── websockets/                  # Real-time WebSocket handlers
-│
-├── 📁 models/
-│   ├── yolo/                        # Object detection weights
-│   └── custom/                      # Domain-specific classifiers
 │
 ├── 📁 tests/
 │   ├── unit/
@@ -594,13 +565,15 @@ execra/
 │   ├── api_reference.md
 │   └── contributing_guide.md
 │
-├── 📁 scripts/
-│   └── download_models.py
-│
-├── docker-compose.yml
 ├── requirements.txt
-├── .env.example
-└── main.py
+├── requirements-dev.txt
+├── setup.cfg
+├── mypy.ini
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
+├── SECURITY.md
+└── README.md
 ```
 
 ---
