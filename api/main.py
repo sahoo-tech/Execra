@@ -13,16 +13,18 @@ app.add_middleware(
 )
 
 
+from core.logger import logger
+
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    print("Execra API starting...")
+    logger.info(f"Execra API starting on port {settings.API_PORT}...")
 
 
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
-    print("Execra API shutting down...")
+    logger.info("Execra API shutting down...")
 
 
 # Root endpoint
