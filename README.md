@@ -544,6 +544,7 @@ docker-compose up --build
 execra/
 │
 ├── 📁 core/
+│   ├── config.py                # Central configuration (Pydantic)
 │   ├── perception/
 │   │   ├── screen_capture.py        # Screen capture engine
 │   │   ├── camera_feed.py           # Camera input handler
@@ -569,11 +570,6 @@ execra/
 │       ├── mode_manager.py          # Passive/Active mode switcher
 │       ├── action_logger.py         # Undo/Recovery stack
 │       └── guidance_dispatcher.py  # Instruction delivery
-│
-├── 📁 frontend/
-│   ├── overlay/                     # Desktop overlay UI
-│   ├── panel/                       # Main guidance panel
-│   └── components/                  # Reusable UI components
 │
 ├── 📁 api/
 │   ├── main.py                      # FastAPI application
