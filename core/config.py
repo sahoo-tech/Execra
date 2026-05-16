@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 # Load .env file at module import time
 load_dotenv()
 
+TRUST_SCORE_WEIGHT_TOLERANCE = 0.001
+
 
 @dataclass
 class Settings:
@@ -79,6 +81,21 @@ class Settings:
             self.TRUST_SCORE_W2 = float(env_val)
         if env_val := os.getenv("TRUST_SCORE_W3"):
             self.TRUST_SCORE_W3 = float(env_val)
+
+        self.validate_trust_score_weights()
+
+    def validate_trust_score_weights(self) -> None:
+        """
+        Validate that trust score weights sum to 1 within a small tolerance.
+        Raises ValueError if the configured weights are invalid.
+        """
+        total_weight = self.TRUST_SCORE_W1 + self.TRUST_SCORE_W2 + self.TRUST_SCORE_W3
+
+        if abs(total_weight - 1.0) > TRUST_SCORE_WEIGHT_TOLERANCE:
+            raise ValueError(
+                "Invalid trust score weights: TRUST_SCORE_W1, TRUST_SCORE_W2, "
+                f"and TRUST_SCORE_W3 must sum to 1.0; got {total_weight:.3f}"
+            )
 
     def validate_required(self) -> None:
         """

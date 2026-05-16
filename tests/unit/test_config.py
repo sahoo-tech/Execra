@@ -116,3 +116,54 @@ def test_settings_partial_required_keys_raises_error():
 
     with pytest.raises(ValueError, match="Missing required configuration"):
         settings.validate_required()
+
+
+def test_settings_accepts_valid_trust_score_weight_sum():
+    """Test that trust score weights are valid when they sum to 1."""
+    env_vars = {
+        "TRUST_SCORE_W1": "0.4",
+        "TRUST_SCORE_W2": "0.35",
+        "TRUST_SCORE_W3": "0.25",
+    }
+
+    with patch.dict(os.environ, env_vars, clear=False):
+        from core.config import Settings
+
+        settings = Settings()
+
+        assert settings.TRUST_SCORE_W1 == 0.4
+        assert settings.TRUST_SCORE_W2 == 0.35
+        assert settings.TRUST_SCORE_W3 == 0.25
+
+
+def test_settings_rejects_invalid_trust_score_weight_sum():
+    """Test that invalid trust score weight totals raise a clear error."""
+    env_vars = {
+        "TRUST_SCORE_W1": "0.5",
+        "TRUST_SCORE_W2": "0.5",
+        "TRUST_SCORE_W3": "0.5",
+    }
+
+    with patch.dict(os.environ, env_vars, clear=False):
+        from core.config import Settings
+
+        with pytest.raises(ValueError, match="must sum to 1.0"):
+            Settings()
+
+
+def test_settings_accepts_trust_score_weight_sum_within_tolerance():
+    """Test that minor floating-point drift is accepted."""
+    env_vars = {
+        "TRUST_SCORE_W1": "0.3333",
+        "TRUST_SCORE_W2": "0.3333",
+        "TRUST_SCORE_W3": "0.3325",
+    }
+
+    with patch.dict(os.environ, env_vars, clear=False):
+        from core.config import Settings
+
+        settings = Settings()
+
+        assert settings.TRUST_SCORE_W1 == 0.3333
+        assert settings.TRUST_SCORE_W2 == 0.3333
+        assert settings.TRUST_SCORE_W3 == 0.3325
