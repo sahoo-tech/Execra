@@ -1,0 +1,45 @@
+{
+  "dataset": "research/eval/eval_dataset.json",
+  "systems": [
+    {
+      "name": "execra",
+      "instruction_accuracy": 0.3278,
+      "trust_calibration_error": 0.2091,
+      "latency_p95_ms": 244.06,
+      "false_positive_rate": 0.0,
+      "precision": 1.0,
+      "recall": 0.2083,
+      "f1_score": 0.3448
+    },
+    {
+      "name": "no_guidance",
+      "instruction_accuracy": 0.2345,
+      "trust_calibration_error": 0.15,
+      "latency_p95_ms": 15.33,
+      "false_positive_rate": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    {
+      "name": "random_rules",
+      "instruction_accuracy": 0.0206,
+      "trust_calibration_error": 0.3043,
+      "latency_p95_ms": 76.9,
+      "false_positive_rate": 1.0,
+      "precision": 0.8,
+      "recall": 1.0,
+      "f1_score": 0.8889
+    },
+    {
+      "name": "single_llm",
+      "instruction_accuracy": 0.2785,
+      "trust_calibration_error": 0.1233,
+      "latency_p95_ms": 411.89,
+      "false_positive_rate": 0.25,
+      "precision": 0.8571,
+      "recall": 0.375,
+      "f1_score": 0.5217
+    }
+  ]
+}
