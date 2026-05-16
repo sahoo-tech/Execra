@@ -114,6 +114,7 @@ Traditional Workflow:        Execra Workflow:
 - 🔤 OCR — text recognition
 - 🧩 Object detection & UI understanding
 - ⚡ Continuous action tracking
+- 🛡️ **Privacy Masking Engine (Local Redaction)**
 
 ### 🧭 2. Context & Intent Understanding
 - 📌 Auto-detect task type (no prompt needed)
@@ -465,6 +466,11 @@ Every instruction delivered by Execra includes:
 <td>Action history, undo stack, session logs</td>
 </tr>
 <tr>
+<td><b>🛡️ Privacy Engine</b></td>
+<td>OpenCV, Regex (PII Patterns)</td>
+<td>Local data sanitization & masking</td>
+</tr>
+<tr>
 <td><b>🐳 Deployment</b></td>
 <td>Docker, Kubernetes</td>
 <td>Scalable microservice deployment</td>
@@ -548,7 +554,8 @@ execra/
 │   ├── perception/
 │   │   ├── screen_capture.py        # Screen capture engine
 │   │   ├── camera_feed.py           # Camera input handler
-│   │   └── ocr_engine.py            # OCR + text extraction
+│   │   ├── ocr_engine.py            # Text recognition (Tesseract)
+│   │   └── privacy_masker.py        # PII & geometric redaction
 │   │
 │   ├── intelligence/
 │   │   ├── llm_client.py            # LLM abstraction layer

@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from api.routes import actions, context
+
 
 app = FastAPI(title="Execra API", version="0.1.0", description="Execra backend API")
 
@@ -34,3 +36,7 @@ def read_root():
 # Placeholder routers
 # from api.routes import users
 # app.include_router(users.router)
+
+# Action log and session context endpoints
+app.include_router(actions.router, prefix="/api/v1")
+app.include_router(context.router, prefix="/api/v1")
