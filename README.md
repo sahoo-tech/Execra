@@ -114,6 +114,7 @@ Traditional Workflow:        Execra Workflow:
 - 🔤 OCR — text recognition
 - 🧩 Object detection & UI understanding
 - ⚡ Continuous action tracking
+- 🛡️ **Privacy Masking Engine (Local Redaction)**
 
 ### 🧭 2. Context & Intent Understanding
 - 📌 Auto-detect task type (no prompt needed)
@@ -465,6 +466,11 @@ Every instruction delivered by Execra includes:
 <td>Action history, undo stack, session logs</td>
 </tr>
 <tr>
+<td><b>🛡️ Privacy Engine</b></td>
+<td>OpenCV, Regex (PII Patterns)</td>
+<td>Local data sanitization & masking</td>
+</tr>
+<tr>
 <td><b>🐳 Deployment</b></td>
 <td>Docker, Kubernetes</td>
 <td>Scalable microservice deployment</td>
@@ -540,67 +546,95 @@ docker-compose up --build
 
 ## 📂 Project Structure
 
-```
+```text
 execra/
 │
-├── 📁 core/
+├── core/
+│   │
 │   ├── perception/
 │   │   ├── screen_capture.py        # Screen capture engine
 │   │   ├── camera_feed.py           # Camera input handler
-│   │   └── ocr_engine.py            # Text recognition (Tesseract)
+│   │   ├── ocr_engine.py            # Text recognition (Tesseract)
+│   │   └── privacy_masker.py        # PII & geometric redaction
 │   │
 │   ├── intelligence/
 │   │   ├── llm_client.py            # LLM abstraction layer
-│   │   ├── context_engine.py        # Session context manager
+│   │   ├── context_engine.py        # Session/context manager
 │   │   ├── consequence_sim.py       # Outcome prediction engine
-│   │   └── trust_scorer.py          # Confidence scoring
+│   │   └── trust_scorer.py          # Confidence scoring pipeline
 │   │
 │   ├── digital/
 │   │   ├── code_tracer.py           # Runtime execution tracer
-│   │   ├── error_detector.py        # Logical error identification
-│   │   └── task_decomposer.py       # Goal → Step converter
+│   │   ├── error_detector.py        # Logical/runtime issue detector
+│   │   └── task_decomposer.py       # Goal → execution steps
 │   │
 │   ├── physical/
 │   │   ├── object_detector.py       # YOLO-based detection
-│   │   ├── task_recognizer.py       # Physical task classifier
-│   │   └── action_validator.py      # Real-world action checker
+│   │   ├── task_recognizer.py       # Physical task classification
+│   │   └── action_validator.py      # Real-world action validator
 │   │
 │   └── hybrid/
-│       ├── mode_manager.py          # Passive/Active mode switcher
-│       ├── action_logger.py         # Undo/Recovery stack
-│       └── guidance_dispatcher.py  # Instruction delivery
+│       ├── mode_manager.py          # Passive/Active mode manager
+│       ├── action_logger.py         # Undo/replay tracking
+│       └── guidance_dispatcher.py   # Instruction delivery system
 │
-├── 📁 frontend/
-│   ├── overlay/                     # Desktop overlay UI
-│   ├── panel/                       # Main guidance panel
-│   └── components/                  # Reusable UI components
+├── api/
+│   │
+│   ├── main.py                      # FastAPI application entry
+│   │
+│   ├── routes/
+│   │   ├── health.py                # Health check endpoints
+│   │   ├── execution.py             # Execution guidance APIs
+│   │   └── context.py               # Session/context APIs
+│   │
+│   └── websockets/
+│       └── realtime.py              # Real-time communication layer
 │
-├── 📁 api/
-│   ├── main.py                      # FastAPI application
-│   ├── routes/                      # API endpoints
-│   └── websockets/                  # Real-time WebSocket handlers
+├── models/
+│   │
+│   ├── yolo/                        # YOLO model weights
+│   └── custom/                      # Custom-trained classifiers
 │
-├── 📁 models/
-│   ├── yolo/                        # Object detection weights
-│   └── custom/                      # Domain-specific classifiers
+├── tests/
+│   │
+│   ├── unit/                        # Unit tests
+│   ├── integration/                 # Integration tests
+│   └── e2e/                         # End-to-end tests
 │
-├── 📁 tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
+├── docs/
+│   ├── architecture.md              # System architecture docs
+│   ├── api_reference.md             # API documentation
+│   └── contributing_guide.md        # Contributor onboarding guide
 │
-├── 📁 docs/
-│   ├── architecture.md
-│   ├── api_reference.md
-│   └── contributing_guide.md
+├── scripts/
+│   ├── download_models.py           # Download AI model weights
+│   └── setup_environment.py         # Local environment setup
 │
-├── 📁 scripts/
-│   └── download_models.py
+├── .github/
+│   ├── ISSUE_TEMPLATE/              # GitHub issue templates
+│   ├── workflows/                   # GitHub Actions workflows
+│   └── pull_request_template.md     # PR template
 │
-├── docker-compose.yml
-├── requirements.txt
-├── .env.example
-└── main.py
+├── configs/
+│   ├── development.yaml             # Development configuration
+│   ├── production.yaml              # Production configuration
+│   └── logging.yaml                 # Logging configuration
+│
+├── assets/
+│   ├── logo/                        # Branding assets
+│   ├── screenshots/                 # README screenshots
+│   └── diagrams/                    # Architecture diagrams
+│
+├── docker-compose.yml               # Multi-container orchestration
+├── Dockerfile                       # Docker image definition
+├── requirements.txt                 # Python dependencies
+├── pyproject.toml                   # Project metadata/config
+├── pytest.ini                       # Pytest configuration
+├── .env.example                     # Environment variables template
+├── .gitignore                       # Ignored files
+├── LICENSE                          # MIT license
+├── README.md                        # Project documentation
+└── main.py                          # Main application entry point
 ```
 
 ---

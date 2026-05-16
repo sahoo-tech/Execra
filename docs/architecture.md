@@ -45,6 +45,12 @@ Core Loop:
        ↑___________________ Feedback (Action Logger) __________________________|
 ```
 
+### Full Pipeline Data Flow
+```mermaid
+flowchart LR
+    Perception --> Processing --> Intelligence --> Output
+```
+
 ---
 
 ## 🏗️ High-Level Architecture
@@ -188,6 +194,12 @@ The **Digital Domain** handles all screen-based, code-based, and software-nav sc
 └─────────────────────────────────────────────────────────┘
 ```
 
+### Digital Domain Module Interactions
+```mermaid
+flowchart LR
+    ScreenCapture --> OCR --> CodeTracer --> ErrorDetector --> IntelligenceCore
+```
+
 **Supported Use Cases:**
 - Live code debugging with runtime trace analysis
 - Software navigation guidance (form filling, UI flows)
@@ -218,6 +230,12 @@ The **Physical Domain** uses the camera to guide real-world tasks.
 │                       Action Validator                   │
 │                    (is the next step correct?)           │
 └─────────────────────────────────────────────────────────┘
+```
+
+### Physical Domain Module Interactions
+```mermaid
+flowchart LR
+    CameraFeed --> YOLO --> TaskRecognizer --> IntelligenceCore
 ```
 
 **Supported Use Cases:**
@@ -256,6 +274,21 @@ Execra supports three interaction modes, managed by `core/hybrid/mode_manager.py
 | **Mixed** | Both simultaneously | Continues passive guidance while also accepting text input |
 
 ---
+
+### Session Context State Machine
+```mermaid
+stateDiagram-v2
+    [*] --> Created
+    Created --> Active
+    Active --> StepAdvanced
+    StepAdvanced --> Active
+    Active --> Expired
+    StepAdvanced --> Expired
+    Expired --> Reset
+    Reset --> Created
+    Active --> [*]
+    Expired --> [*]
+```
 
 ## 🛡️ Trust & Confidence Scoring
 
@@ -341,6 +374,23 @@ FastAPI Application (api/main.py)
              └── ws://localhost:8000/ws/guidance
                      ← real-time instruction stream
                      → user action events
+```
+
+### WebSocket Message Lifecycle
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant Handler
+    participant IntelligenceCore
+    participant Broadcaster
+
+    Client->>Server: client event
+    Server->>Handler: route event
+    Handler->>IntelligenceCore: process payload
+    IntelligenceCore-->>Handler: guidance response
+    Handler->>Broadcaster: broadcast update
+    Broadcaster-->>Client: instruction
 ```
 
 **WebSocket Message Format:**
