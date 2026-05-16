@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import actions, context
+from api.websockets import replay as ws_replay
 
 
 app = FastAPI(title="Execra API", version="0.1.0", description="Execra backend API")
@@ -40,3 +41,6 @@ def read_root():
 # Action log and session context endpoints
 app.include_router(actions.router, prefix="/api/v1")
 app.include_router(context.router, prefix="/api/v1")
+
+# WebSocket replay streaming
+app.include_router(ws_replay.router)
