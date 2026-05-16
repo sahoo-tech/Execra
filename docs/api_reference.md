@@ -1,3 +1,5 @@
+> 💡 Want to try the API interactively?
+> Open the [API Playground](api_playground.html) in your browser — no setup needed!
 <div align="center">
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=180&section=header&text=Execra%20API%20Reference&fontSize=52&fontColor=ffffff&animation=fadeIn&fontAlignY=40&desc=FastAPI%20REST%20%26%20WebSocket%20Documentation&descAlignY=62&descAlign=50&descSize=18" width="100%" alt="API Reference Banner"/>
