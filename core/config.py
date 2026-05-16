@@ -1,16 +1,23 @@
 """
 Central configuration module for Execra.
-All modules should import settings from here instead of using os.getenv() directly.
+Modules should import settings from here instead of os.getenv().
 """
 
 import os
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
 
 # Load .env file at module import time
 load_dotenv()
+
+
+def parse_cors_origins(raw_origins: str) -> list[str]:
+    """
+    Parse comma-separated CORS origins from an environment variable.
+    Empty entries are ignored so trailing commas do not create invalid origins.
+    """
+    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 
 @dataclass
@@ -33,14 +40,31 @@ class Settings:
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     LOG_LEVEL: str = "INFO"
+    CORS_ORIGINS: list[str] = field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+        ]
+    )
 
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
 
-    # Trust Score Weights
-    TRUST_SCORE_W1: float = 0.5
-    TRUST_SCORE_W2: float = 0.3
-    TRUST_SCORE_W3: float = 0.2
+    # Privacy Configuration
+    PRIVACY_MASKING_ENABLED: bool = True
+    MASKED_REGIONS: list = field(
+        default_factory=list
+    )  # List of [x1, y1, x2, y2]
+    SENSITIVE_PATTERNS: list = field(
+        default_factory=lambda: [
+            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",  # Emails
+            r"\b\d{4}-\d{4}-\d{4}-\d{4}\b",  # Credit Cards
+            r"\b\d{3}-\d{2}-\d{4}\b",  # SSN
+            r"(?i)api_key[:=]\s*[A-Za-z0-9_\-]+",  # Generic API Keys
+        ]
+    )
 
     def __post_init__(self):
         """Load environment variables and override defaults."""
@@ -67,6 +91,8 @@ class Settings:
             self.API_PORT = int(env_val)
         if env_val := os.getenv("LOG_LEVEL"):
             self.LOG_LEVEL = env_val
+        if env_val := os.getenv("CORS_ORIGINS"):
+            self.CORS_ORIGINS = parse_cors_origins(env_val)
 
         # Redis Configuration
         if env_val := os.getenv("REDIS_URL"):
@@ -80,6 +106,13 @@ class Settings:
         if env_val := os.getenv("TRUST_SCORE_W3"):
             self.TRUST_SCORE_W3 = float(env_val)
 
+        # Privacy Configuration
+        if env_val := os.getenv("PRIVACY_MASKING_ENABLED"):
+            self.PRIVACY_MASKING_ENABLED = env_val.lower() == "true"
+        # MASKED_REGIONS and SENSITIVE_PATTERNS are complex types,
+        # usually handled via JSON strings in .env if needed.
+        # For now, we use defaults or manual override.
+
     def validate_required(self) -> None:
         """
         Validate that required fields are set (not empty).
@@ -92,7 +125,8 @@ class Settings:
 
         missing = [key for key, value in required_fields.items() if not value]
         if missing:
-            raise ValueError(f"Missing required configuration: {', '.join(missing)}")
+            msg = f"Missing required configuration: {', '.join(missing)}"
+            raise ValueError(msg)
 
 
 # Global settings instance - import this everywhere

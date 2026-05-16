@@ -31,6 +31,12 @@ def test_settings_correct_defaults():
     assert settings.API_HOST == "0.0.0.0"
     assert settings.API_PORT == 8000
     assert settings.LOG_LEVEL == "INFO"
+    assert settings.CORS_ORIGINS == [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
 
     # Redis Configuration
     assert settings.REDIS_URL == "redis://localhost:6379"
@@ -54,6 +60,7 @@ def test_settings_override_via_env_vars():
         "API_HOST": "127.0.0.1",
         "API_PORT": "9000",
         "LOG_LEVEL": "DEBUG",
+        "CORS_ORIGINS": "https://app.example.com, https://admin.example.com",
         "REDIS_URL": "redis://localhost:6380",
         "TRUST_SCORE_W1": "0.6",
         "TRUST_SCORE_W2": "0.25",
@@ -79,6 +86,10 @@ def test_settings_override_via_env_vars():
         assert settings.API_HOST == "127.0.0.1"
         assert settings.API_PORT == 9000
         assert settings.LOG_LEVEL == "DEBUG"
+        assert settings.CORS_ORIGINS == [
+            "https://app.example.com",
+            "https://admin.example.com",
+        ]
 
         # Redis Configuration
         assert settings.REDIS_URL == "redis://localhost:6380"
@@ -116,3 +127,15 @@ def test_settings_partial_required_keys_raises_error():
 
     with pytest.raises(ValueError, match="Missing required configuration"):
         settings.validate_required()
+
+
+def test_parse_cors_origins_ignores_empty_entries():
+    """Test that empty entries and extra whitespace are ignored."""
+    from core.config import parse_cors_origins
+
+    raw_origins = " http://localhost:3000, ,https://app.example.com, "
+
+    assert parse_cors_origins(raw_origins) == [
+        "http://localhost:3000",
+        "https://app.example.com",
+    ]
