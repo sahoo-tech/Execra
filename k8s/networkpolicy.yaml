@@ -1,0 +1,41 @@
+# --- NetworkPolicy for API ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-to-api
+  namespace: execra
+spec:
+  podSelector:
+    matchLabels:
+      app: execra-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx # Common label for NGINX ingress namespace
+      ports:
+        - protocol: TCP
+          port: 8000
+---
+# --- NetworkPolicy for Redis ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-to-redis
+  namespace: execra
+spec:
+  podSelector:
+    matchLabels:
+      app: execra-redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: execra-api
+      ports:
+        - protocol: TCP
+          port: 6379

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: execra-api
+  namespace: execra
+  labels:
+    app: execra-api
+    app.kubernetes.io/name: execra-api
+    app.kubernetes.io/component: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: execra-api
+  template:
+    metadata:
+      labels:
+        app: execra-api
+    spec:
+      containers:
+        - name: execra-api
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+          # Replace with your registry path, e.g., ghcr.io/sahoo-tech/execra-api:latest
+          image: execra-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: execra-secrets
+                  key: REDIS_PASSWORD
+          envFrom:
+            - configMapRef:
+                name: execra-config
+            - secretRef:
+                name: execra-secrets
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5

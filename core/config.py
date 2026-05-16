@@ -51,6 +51,7 @@ class Settings:
 
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
+    REDIS_AUTH: Optional[str] = None
 
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
@@ -95,8 +96,10 @@ class Settings:
             self.CORS_ORIGINS = parse_cors_origins(env_val)
 
         # Redis Configuration
-        if env_val := os.getenv("REDIS_URL"):
-            self.REDIS_URL = env_val
+        if val := os.getenv("REDIS_URL"):
+            self.REDIS_URL = val
+        if val := os.getenv("REDIS_PASSWORD"):
+            self.REDIS_AUTH = val
 
         # Trust Score Weights
         if env_val := os.getenv("TRUST_SCORE_W1"):
