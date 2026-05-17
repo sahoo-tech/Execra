@@ -1,159 +1,225 @@
-import asyncio
+"""Unit tests for core.utils.retry."""
 import pytest
-import unittest
-
-from unittest.mock import Mock, AsyncMock,patch
-from openai import APIError, RateLimitError
 
 from core.utils.retry import retry
 
-class TestRetry(unittest.TestCase):
 
-    def test_non_retryable_exception(self):
-        
-        mock_func = Mock(side_effect=ValueError("invalid input"))
-        decorator = retry()(mock_func)
-
-        with pytest.raises(ValueError):
-            decorator()
-
-        assert mock_func.call_count == 1
+# ---------------------------------------------------------------------------
+# Async coroutine tests
+# ---------------------------------------------------------------------------
 
 
-    def test_sync_success_without_retry(self):
+@pytest.mark.asyncio
+async def test_coroutine_succeeds_on_first_attempt():
+    """Function that succeeds immediately is called exactly once."""
+    call_count = 0
 
-        mock_func = Mock(return_value="success")
-        decorator = retry()(mock_func)
-        result = decorator()
+    @retry(max_retries=3, base_delay=0.01)
+    async def always_ok():
+        nonlocal call_count
+        call_count += 1
+        return "ok"
 
-        assert result == "success"
-        assert mock_func.call_count == 1
+    result = await always_ok()
+    assert result == "ok"
+    assert call_count == 1
 
-    def test_sync_retries_then_success(self):
 
-        mock_func = Mock(
-            side_effect=[
-                APIError("temporary error", request=None, body=None),
-                "success"
-            ]
-        )
-        decorator = retry(max_retries=3, base_delay=0)(mock_func)
-        
-        with patch("time.sleep") as mock_sleep:
-            
-            result = decorator()
+@pytest.mark.asyncio
+async def test_coroutine_retries_on_transient_failure():
+    """Function that fails twice then succeeds returns the correct value."""
+    call_count = 0
 
-            assert result == "success"
-            assert mock_func.call_count == 2
-            mock_sleep.assert_called_once_with(0)
+    @retry(max_retries=3, base_delay=0.01)
+    async def flaky():
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:
+            raise ValueError("transient error")
+        return "success"
 
-    def test_sync_max_retries_exceeded(self):
+    result = await flaky()
+    assert result == "success"
+    assert call_count == 3
 
-        mock_func = Mock(
-            side_effect=(
-                APIError("temporary error", request=None, body=None)
-            )
-        )
-        decorator = retry(max_retries=3, base_delay=0)(mock_func)
-        
-        with patch("time.sleep") as mock_sleep:
 
-            with pytest.raises(APIError):
-                decorator()
+@pytest.mark.asyncio
+async def test_coroutine_raises_after_max_retries_exhausted():
+    """Function that always fails re-raises the last exception."""
+    call_count = 0
 
-            assert mock_func.call_count == 3
-            assert mock_sleep.call_count == 2
-    
-    @pytest.mark.asyncio
-    async def test_async_success_without_retry(self):
+    @retry(max_retries=2, base_delay=0.01)
+    async def always_fails():
+        nonlocal call_count
+        call_count += 1
+        raise RuntimeError("permanent failure")
 
-        mock_func = AsyncMock(return_value="success")
-        decorator = retry()(mock_func)
-        result = await decorator()
+    with pytest.raises(RuntimeError, match="permanent failure"):
+        await always_fails()
 
-        assert result == "success"
-        assert mock_func.call_count == 1
+    # 1 initial attempt + 2 retries = 3 total
+    assert call_count == 3
 
-    @pytest.mark.asyncio
-    async def test_async_retries_then_success(self):
 
-        mock_response = Mock()
-        mock_response.request = Mock()
+@pytest.mark.asyncio
+async def test_coroutine_total_attempts_is_max_retries_plus_one():
+    """Confirms exactly max_retries + 1 attempts are made."""
+    call_count = 0
 
-        mock_func = AsyncMock(
-            side_effect=[
-                RateLimitError("temporary error", response=mock_response, body=None),
-                "success"
-            ]
-        )
-        decorator = retry(max_retries=3, base_delay=0)(mock_func)
+    @retry(max_retries=4, base_delay=0.01)
+    async def always_fails():
+        nonlocal call_count
+        call_count += 1
+        raise ValueError("error")
 
-        with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
-            
-            result = await decorator()
+    with pytest.raises(ValueError):
+        await always_fails()
 
-            assert result == "success"
-            assert mock_func.call_count == 2
-            mock_sleep.assert_awaited_once_with(0)
+    assert call_count == 5
 
-    @pytest.mark.asyncio
-    async def test_async_max_retries_exceeded(self):
 
-        mock_response = Mock()
-        mock_response.request = Mock()
+@pytest.mark.asyncio
+async def test_coroutine_zero_retries_calls_once():
+    """max_retries=0 means a single attempt with no retries."""
+    call_count = 0
 
-        mock_func = AsyncMock(
-            side_effect=[
-                RateLimitError("temporary error", response=mock_response, body=None)
-            ]
-        )
+    @retry(max_retries=0, base_delay=0.01)
+    async def always_fails():
+        nonlocal call_count
+        call_count += 1
+        raise ValueError("only once")
 
-        decorator = retry(max_retries=3, base_delay=0)(mock_func)
+    with pytest.raises(ValueError):
+        await always_fails()
 
-        with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
+    assert call_count == 1
 
-            with pytest.raises(RateLimitError):
-                await decorator()
 
-            assert mock_func.call_count == 3
-            assert mock_sleep.call_count == 2
+@pytest.mark.asyncio
+async def test_coroutine_passes_args_and_kwargs():
+    """Wrapped coroutine receives positional and keyword arguments."""
 
-    def test_exponential_backoff_sync(self):
+    @retry(max_retries=1, base_delay=0.01)
+    async def add(a: int, b: int = 0) -> int:
+        return a + b
 
-        mock_response = Mock()
-        mock_response.request = Mock()
+    assert await add(3, b=4) == 7
 
-        mock_func = Mock(
-            side_effect=[
-                APIError("error1", request=None, body=None),
-                RateLimitError("error2", response=mock_response, body=None),
-                "success"
-            ]
-        )
-        decorator = retry(max_retries=3, base_delay=1)(mock_func)
 
-        with patch("time.sleep") as mock_sleep:
-            decorator()
+# ---------------------------------------------------------------------------
+# Async generator tests
+# ---------------------------------------------------------------------------
 
-            assert mock_sleep.call_args_list == [ ((1,),), ((2,),) ]
 
-    @pytest.mark.asyncio
-    async def test_exponential_backoff_async(self):
+@pytest.mark.asyncio
+async def test_async_gen_yields_all_items_on_success():
+    """Async generator that succeeds streams every item."""
 
-        mock_response = Mock()
-        mock_response.request = Mock()
+    @retry(max_retries=2, base_delay=0.01)
+    async def good_stream():
+        for i in range(3):
+            yield i
 
-        mock_func = AsyncMock(
-            side_effect=[
-                APIError("error1", request=None, body=None),
-                RateLimitError("error2", response=mock_response, body=None),
-                "success"
-            ]
-        )
-        decorator = retry(max_retries=3, base_delay=1)(mock_func)
-        
-        with patch("asyncio.sleep", new_callable=AsyncMock) as mock_sleep:
-            await decorator()
+    results = [item async for item in good_stream()]
+    assert results == [0, 1, 2]
 
-            assert mock_sleep.call_args_list == [ ((1,),), ((2,),) ]
 
+@pytest.mark.asyncio
+async def test_async_gen_retries_when_setup_raises():
+    """Async generator that raises before yielding is retried."""
+    call_count = 0
+
+    @retry(max_retries=2, base_delay=0.01)
+    async def flaky_stream():
+        nonlocal call_count
+        call_count += 1
+        if call_count == 1:
+            raise ConnectionError("stream error")
+        yield "item"
+
+    results = [item async for item in flaky_stream()]
+    assert results == ["item"]
+    assert call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_async_gen_raises_after_max_retries_exhausted():
+    """Async generator that always fails re-raises after all attempts."""
+    call_count = 0
+
+    @retry(max_retries=2, base_delay=0.01)
+    async def bad_stream():
+        nonlocal call_count
+        call_count += 1
+        raise RuntimeError("stream failure")
+        yield  # pragma: no cover — makes this an async generator function
+
+    with pytest.raises(RuntimeError, match="stream failure"):
+        async for _ in bad_stream():
+            pass
+
+    assert call_count == 3  # 1 initial + 2 retries
+
+
+@pytest.mark.asyncio
+async def test_async_gen_passes_args_and_kwargs():
+    """Wrapped async generator receives positional and keyword arguments."""
+
+    @retry(max_retries=1, base_delay=0.01)
+    async def counter(start: int, step: int = 1):
+        for i in range(start, start + 3 * step, step):
+            yield i
+
+    results = [item async for item in counter(10, step=2)]
+    assert results == [10, 12, 14]
+
+
+# ---------------------------------------------------------------------------
+# Metadata preservation tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_retry_preserves_coroutine_metadata():
+    """functools.wraps keeps __name__ and __doc__ on wrapped coroutines."""
+
+    @retry(max_retries=1, base_delay=0.01)
+    async def my_coroutine():
+        """My docstring."""
+        return 1
+
+    assert my_coroutine.__name__ == "my_coroutine"
+    assert my_coroutine.__doc__ == "My docstring."
+
+
+@pytest.mark.asyncio
+async def test_retry_preserves_generator_metadata():
+    """functools.wraps keeps __name__ and __doc__ on wrapped generators."""
+
+    @retry(max_retries=1, base_delay=0.01)
+    async def my_generator():
+        """My generator docstring."""
+        yield 1
+
+    assert my_generator.__name__ == "my_generator"
+    assert my_generator.__doc__ == "My generator docstring."
+
+
+# ---------------------------------------------------------------------------
+# Invalid argument tests
+# ---------------------------------------------------------------------------
+
+
+def test_retry_rejects_negative_max_retries():
+    """Negative max_retries raises ValueError at decoration time."""
+    with pytest.raises(ValueError, match="max_retries"):
+        retry(max_retries=-1, base_delay=1.0)
+
+
+def test_retry_rejects_non_positive_base_delay():
+    """Non-positive base_delay raises ValueError at decoration time."""
+    with pytest.raises(ValueError, match="base_delay"):
+        retry(max_retries=3, base_delay=0)
+
+    with pytest.raises(ValueError, match="base_delay"):
+        retry(max_retries=3, base_delay=-1.0)
