@@ -32,6 +32,29 @@ class Detection(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# PoseResult — pose estimation result from MediaPipe Pose
+# ---------------------------------------------------------------------------
+
+class PoseResult(BaseModel):
+    """Represents the result of a pose estimation from a camera frame."""
+
+    landmarks: dict[str, tuple[float, float, float]] = Field(
+        ...,
+        description=(
+            "Named body landmarks with (x, y, z) normalised coordinates. "
+            "Keys are MediaPipe Pose landmark names, e.g. 'LEFT_SHOULDER'."
+        ),
+    )
+    posture: Literal["leaning", "upright", "crouching"] = Field(
+        ...,
+        description=(
+            "Classified body posture derived from "
+            "shoulder/hip/knee landmark geometry."
+        ),
+    )
+
+
+# ---------------------------------------------------------------------------
 # ErrorRecord — a single logged error entry in a session
 # ---------------------------------------------------------------------------
 

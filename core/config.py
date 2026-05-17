@@ -5,6 +5,7 @@ Modules should import settings from here instead of os.getenv().
 
 import os
 from dataclasses import dataclass, field
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -54,6 +55,9 @@ class Settings:
     REDIS_AUTH: Optional[str] = None
 
     # Privacy Configuration
+    # Pose Estimation
+    POSE_ESTIMATION_ENABLED: bool = False
+
     PRIVACY_MASKING_ENABLED: bool = True
     MASKED_REGIONS: list = field(
         default_factory=list
@@ -110,6 +114,10 @@ class Settings:
             self.TRUST_SCORE_W3 = float(env_val)
 
         # Privacy Configuration
+        # Pose Estimation
+        if env_val := os.getenv("POSE_ESTIMATION_ENABLED"):
+            self.POSE_ESTIMATION_ENABLED = env_val.lower() == "true"
+
         if env_val := os.getenv("PRIVACY_MASKING_ENABLED"):
             self.PRIVACY_MASKING_ENABLED = env_val.lower() == "true"
         # MASKED_REGIONS and SENSITIVE_PATTERNS are complex types,
