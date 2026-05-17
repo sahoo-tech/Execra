@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Execra</title>
+  <style>
+    :root {
+      --color-online: #4caf50;
+      --color-offline: #ff9800;
+      --color-bg: #1a1a2e;
+      --color-surface: #16213e;
+      --color-text: #e0e0e0;
+      --color-accent: #00d4ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* Status bar */
+    #status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--color-surface);
+      border-bottom: 1px solid #0f3460;
+    }
+
+    #ocr-status {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(255, 152, 0, 0.15);
+      color: var(--color-offline);
+      transition: background 0.25s, color 0.25s;
+    }
+
+    #ocr-status[data-status="online"] {
+      background: rgba(76, 175, 80, 0.15);
+      color: var(--color-online);
+    }
+
+    /* Guidance panel */
+    #guidance-panel {
+      padding: 16px;
+      max-width: 680px;
+      margin: 20px auto;
+      background: var(--color-surface);
+      border-radius: 8px;
+      border: 1px solid #0f3460;
+      min-height: 80px;
+    }
+
+    .guidance-instruction {
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .guidance-step {
+      display: inline-block;
+      font-size: 11px;
+      color: var(--color-accent);
+      margin-right: 12px;
+    }
+
+    .guidance-confidence {
+      font-size: 11px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="status-bar">
+    <span id="ocr-status" data-status="offline">OCR: Local (offline)</span>
+  </div>
+
+  <div id="guidance-panel" aria-live="polite" aria-label="Execra guidance"></div>
+
+  <script type="module" src="renderer/app.js"></script>
+</body>
+</html>
