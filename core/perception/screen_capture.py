@@ -85,6 +85,22 @@ class ScreenCapture:
         except Exception as e:
             logger.error("Failed to initialize screen capture: %s", e)
 
+    def capture_frame(self) -> np.ndarray:
+        """
+        Capture a single standalone screen frame.
+
+        Returns:
+            np.ndarray: Captured RGB frame.
+        """
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]
+            screenshot = sct.grab(monitor)
+            
+            # Convert screenshot to RGB numpy array matching _run_loop conversion
+            frame = np.asarray(screenshot)[:, :, :3]
+            frame = frame[:, :, ::-1]
+            return frame
+
     def start_capture_loop(self, queue: asyncio.Queue) -> None:
         """
         Start continuous screen capture in a separate thread.

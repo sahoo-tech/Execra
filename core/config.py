@@ -7,6 +7,7 @@ import os
 from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
+from typing import Optional
 
 # Load .env file at module import time
 load_dotenv()
