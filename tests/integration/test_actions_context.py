@@ -10,7 +10,7 @@ client = TestClient(app)
 
 def setup_function():
     """Reset action log and context before every test."""
-    action_logger._stack.clear()
+    action_logger.clear()
     context_module._current_context = None
 
 def test_get_actions_empty():
@@ -23,20 +23,20 @@ def test_get_actions_empty():
 def test_undo_returns_409_when_empty():
     response = client.post("/api/v1/actions/undo")
     assert response.status_code == 409
-    assert "Nothing to undo" in response.json()["detail"]
+    assert "Nothing in the undo stack" in response.json()["detail"]
 
 def test_undo_returns_undone_action():
     action = ActionRecord(
         id="act_001",
         session_id="sess_001",
-        timestamp=datetime.now(),
         type="code_edit",
         description="Modified line 42",
         domain="digital",
         was_guided=True,
-        guidance_confidence=0.9
+        guidance_confidence=0.9,
+        is_undoable=True,
     )
-    action_logger._stack.append(action)
+    action_logger.record_action(action)
 
     response = client.post("/api/v1/actions/undo")
     assert response.status_code == 200
@@ -77,7 +77,7 @@ def test_delete_context_returns_success():
     assert response.status_code == 200
     assert response.json()["message"] == "Session context cleared."
 
-def test_delete_context_clears_deque():
+def test_delete_context_clears_session_actions():
     from api.routes.context import SessionContext
 
     context_module._current_context = SessionContext(
@@ -91,19 +91,18 @@ def test_delete_context_clears_deque():
         started_at=datetime.now()
     )
 
-    action_logger._stack.append(
+    action_logger.record_action(
         ActionRecord(
             id="act_001",
             session_id="sess_001",
-            timestamp=datetime.now(),
             type="code_edit",
             description="Test",
             domain="digital",
             was_guided=True,
-            guidance_confidence=0.9
+            guidance_confidence=0.9,
         )
     )
 
     client.delete("/api/v1/context")
 
-    assert len(action_logger._stack) == 0
+    assert action_logger.total_actions() == 0

@@ -58,5 +58,8 @@ class ActionLogger:
     def clear(self) -> None:
         self._actions.clear()
 
+    async def clear_session(self, session_id: str) -> None:
+        self._actions = [a for a in self._actions if a.session_id != session_id]
+
 
 action_logger = ActionLogger()
