@@ -7,6 +7,7 @@ from api.routes import actions, context
 
 
 from core.config import settings
+from core.telemetry.tracing import setup_tracing, shutdown_tracing
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +26,14 @@ app.add_middleware(
 # Startup event
 @app.on_event("startup")
 async def startup_event():
+    setup_tracing(settings)
     logger.info("Execra API starting...")
 
 
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
+    shutdown_tracing()
     logger.info("Execra API shutting down...")
 
 

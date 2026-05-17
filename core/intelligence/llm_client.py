@@ -11,6 +11,7 @@ from google.genai import types
 
 from core.config import settings
 from core.utils.retry import retry
+from core.telemetry.tracing import get_tracer, SPAN_INTELLIGENCE_LLM
 
 class BaseLLMClient(ABC):
     """BaseLLMClient is an abstract class for other LLMClients."""
@@ -51,16 +52,19 @@ class OpenAIClient(BaseLLMClient):
         except Exception as e:
             raise RuntimeError(f"Failed to authenticate: {e}")
 
-    @retry(max_retries=3, base_delay=2)      
-    async def complete(self, prompt: str) -> str: 
-        messages = [
-            {"role": "user", "content": prompt}
-        ]
-        response = await self.__client.chat.completions.create(
-            model = self.__model,
-            messages = messages,
-        )
-        return response.choices[0].message.content
+    @retry(max_retries=3, base_delay=2)
+    async def complete(self, prompt: str) -> str:
+        with get_tracer("execra.intelligence").start_as_current_span(SPAN_INTELLIGENCE_LLM) as span:
+            span.set_attribute("llm.backend", "openai")
+            span.set_attribute("llm.model", self.__model)
+            messages = [
+                {"role": "user", "content": prompt}
+            ]
+            response = await self.__client.chat.completions.create(
+                model = self.__model,
+                messages = messages,
+            )
+            return response.choices[0].message.content
     
     @retry(max_retries=3, base_delay=2)
     async def stream(self, prompt: str) -> AsyncIterator[str]:
@@ -110,14 +114,17 @@ class GeminiClient(BaseLLMClient):
 
     @retry(max_retries=3, base_delay=2)
     async def complete(self, prompt: str) -> types.GenerateContentResponse:
-        messages = [
-            {"role": "user", "parts": [{"text":prompt}]}
-        ]
-        response = await self.__client.aio.models.generate_content(
-            model=self.__model,
-            contents=messages
-        )
-        return response
+        with get_tracer("execra.intelligence").start_as_current_span(SPAN_INTELLIGENCE_LLM) as span:
+            span.set_attribute("llm.backend", "gemini")
+            span.set_attribute("llm.model", self.__model)
+            messages = [
+                {"role": "user", "parts": [{"text":prompt}]}
+            ]
+            response = await self.__client.aio.models.generate_content(
+                model=self.__model,
+                contents=messages
+            )
+            return response
     
     @retry(max_retries=3, base_delay=2)
     async def stream(self, prompt: str) -> AsyncIterator[str]:
@@ -168,18 +175,21 @@ class LlamaClient(BaseLLMClient):
     
     @retry(max_retries=3, base_delay=2)
     async def complete(self, prompt: str) -> str:
-        payload = {
-            "model": self.__model,
-            "prompt": prompt,
-            "stream": False
-        }
-        response = await self.__client.post(
-            f"{self.__base_url}/api/generate",
-            json=payload
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data["response"]
+        with get_tracer("execra.intelligence").start_as_current_span(SPAN_INTELLIGENCE_LLM) as span:
+            span.set_attribute("llm.backend", "llama")
+            span.set_attribute("llm.model", self.__model)
+            payload = {
+                "model": self.__model,
+                "prompt": prompt,
+                "stream": False
+            }
+            response = await self.__client.post(
+                f"{self.__base_url}/api/generate",
+                json=payload
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data["response"]
     
     @retry(max_retries=3, base_delay=2)
     async def stream(self, prompt: str) -> AsyncIterator[str]:

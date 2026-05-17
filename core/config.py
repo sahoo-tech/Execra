@@ -5,6 +5,7 @@ Modules should import settings from here instead of os.getenv().
 
 import os
 from dataclasses import dataclass, field
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -53,6 +54,10 @@ class Settings:
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
 
+    # OpenTelemetry / Distributed Tracing
+    OTEL_ENABLED: bool = False
+    OTEL_ENDPOINT: str = "http://localhost:4318/v1/traces"
+
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
     MASKED_REGIONS: list = field(
@@ -100,6 +105,12 @@ class Settings:
             self.REDIS_URL = val
         if val := os.getenv("REDIS_PASSWORD"):
             self.REDIS_AUTH = val
+
+        # OpenTelemetry
+        if env_val := os.getenv("OTEL_ENABLED"):
+            self.OTEL_ENABLED = env_val.lower() in ("1", "true", "yes")
+        if env_val := os.getenv("OTEL_ENDPOINT"):
+            self.OTEL_ENDPOINT = env_val
 
         # Trust Score Weights
         if env_val := os.getenv("TRUST_SCORE_W1"):

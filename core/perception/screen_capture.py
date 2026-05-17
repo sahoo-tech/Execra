@@ -7,6 +7,8 @@ from typing import Optional
 import mss
 import numpy as np
 
+from core.telemetry.tracing import get_tracer, SPAN_PERCEPTION_FRAME
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +47,8 @@ class ScreenCapture:
             loop (asyncio.AbstractEventLoop): Main asyncio event loop.
         """
 
+        _tracer = get_tracer("execra.perception")
+
         try:
             # Create MSS inside the worker thread
             with mss.mss() as sct:
@@ -56,22 +60,25 @@ class ScreenCapture:
                     start_time = time.time()
 
                     try:
-                        screenshot = sct.grab(monitor)
+                        with _tracer.start_as_current_span(SPAN_PERCEPTION_FRAME) as span:
+                            screenshot = sct.grab(monitor)
 
-                        # Convert screenshot to RGB numpy array
-                        frame = np.asarray(screenshot)[:, :, :3]
-                        frame = frame[:, :, ::-1]
+                            # Convert screenshot to RGB numpy array
+                            frame = np.asarray(screenshot)[:, :, :3]
+                            frame = frame[:, :, ::-1]
 
-                        def safe_put() -> None:
-                            try:
-                                queue.put_nowait(frame)
-                                logger.debug("Frame queued successfully")
+                            span.set_attribute("frame_size_bytes", frame.nbytes)
 
-                            except asyncio.QueueFull:
-                                logger.warning("Frame dropped: queue full")
+                            def safe_put() -> None:
+                                try:
+                                    queue.put_nowait(frame)
+                                    logger.debug("Frame queued successfully")
 
-                        # Schedule queue insertion safely
-                        loop.call_soon_threadsafe(safe_put)
+                                except asyncio.QueueFull:
+                                    logger.warning("Frame dropped: queue full")
+
+                            # Schedule queue insertion safely
+                            loop.call_soon_threadsafe(safe_put)
 
                     except Exception as e:
                         logger.error("Capture loop error: %s", e)

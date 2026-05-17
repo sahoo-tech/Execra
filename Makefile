@@ -10,7 +10,7 @@ DOCKER_COMPOSE = docker-compose
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install dev test test-unit test-integration coverage lint format docs models health docker-up docker-down clean
+.PHONY: help install dev test test-unit test-integration coverage lint format docs models health docker-up docker-down tracing clean
 
 # Default target: show help
 help:
@@ -28,6 +28,7 @@ help:
 	@echo "  make health             Run system health check"
 	@echo "  make docker-up          Start services with Docker Compose"
 	@echo "  make docker-down        Stop Docker Compose services"
+	@echo "  make tracing            Start Jaeger and run API with tracing enabled"
 	@echo "  make clean              Remove temporary files and caches"
 
 # Prerequisite: requirements.txt and requirements-dev.txt must exist
@@ -81,6 +82,11 @@ docker-up:
 # Prerequisite: Docker Compose services must be running
 docker-down:
 	$(DOCKER_COMPOSE) down
+
+# Start Jaeger via docker-compose.override.yml and run API with OTEL tracing enabled
+tracing:
+	docker compose -f docker-compose.override.yml up -d jaeger
+	OTEL_ENABLED=true $(UVICORN) api.main:app --host 0.0.0.0 --port 8000
 
 # Clean up temporary files
 clean:

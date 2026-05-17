@@ -3,6 +3,8 @@ import numpy as np
 from PIL import Image
 import cv2
 
+from core.telemetry.tracing import get_tracer, SPAN_PERCEPTION_OCR
+
 
 class OCREngine:
     def __init__(self, language="eng"):
@@ -27,68 +29,74 @@ class OCREngine:
 
     def extract_physical_text_with_boxes(self, array: np.ndarray):
         """Extract OCR text along with bounding box coordinates."""
-        valid = self.validate_frame(array)
-        if not valid:
-            return []
+        with get_tracer("execra.perception").start_as_current_span(SPAN_PERCEPTION_OCR) as span:
+            span.set_attribute("frame_size_bytes", array.nbytes if isinstance(array, np.ndarray) else 0)
 
-        gray = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
+            valid = self.validate_frame(array)
+            if not valid:
+                return []
 
-        denoised = cv2.fastNlMeansDenoising(gray, h=10)
+            gray = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
 
-        processed = cv2.adaptiveThreshold(
-            denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
-        )
-        pil_image = self.convert_to_pil_image(processed)
-        data = pytesseract.image_to_data(
-            pil_image,
-            lang=self.language,
-            output_type=pytesseract.Output.DICT,
-            config="--oem 3 --psm 3",
-        )
+            denoised = cv2.fastNlMeansDenoising(gray, h=10)
 
-        final = []
-        for i in range(len(data["text"])):
+            processed = cv2.adaptiveThreshold(
+                denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+            )
+            pil_image = self.convert_to_pil_image(processed)
+            data = pytesseract.image_to_data(
+                pil_image,
+                lang=self.language,
+                output_type=pytesseract.Output.DICT,
+                config="--oem 3 --psm 3",
+            )
 
-            text = data["text"][i].strip()
+            final = []
+            for i in range(len(data["text"])):
 
-            if text == "":
-                continue
-            try:
-                conf = float(data["conf"][i])
-            except ValueError:
-                continue
-            if not any(ch.isalnum() for ch in text):
-                continue
+                text = data["text"][i].strip()
 
-            if len(text) <= 3 and conf < 80:
-                continue
-            if conf < 23:
-                continue
+                if text == "":
+                    continue
+                try:
+                    conf = float(data["conf"][i])
+                except ValueError:
+                    continue
+                if not any(ch.isalnum() for ch in text):
+                    continue
 
-            if text != "":
-                final.append(
-                    {
-                        "text": text,
-                        "box": {
-                            "left": data["left"][i],
-                            "top": data["top"][i],
-                            "height": data["height"][i],
-                            "width": data["width"][i],
-                        },
-                        "conf": conf,
-                    }
-                )
-        return final
+                if len(text) <= 3 and conf < 80:
+                    continue
+                if conf < 23:
+                    continue
+
+                if text != "":
+                    final.append(
+                        {
+                            "text": text,
+                            "box": {
+                                "left": data["left"][i],
+                                "top": data["top"][i],
+                                "height": data["height"][i],
+                                "width": data["width"][i],
+                            },
+                            "conf": conf,
+                        }
+                    )
+            return final
 
     def extract_dig_text(self, array: np.ndarray) -> str:
         """Extract plain text from digitally generated images."""
-        valid = self.validate_frame(array)
-        if not valid:
-            return ""
+        with get_tracer("execra.perception").start_as_current_span(SPAN_PERCEPTION_OCR) as span:
+            span.set_attribute("frame_size_bytes", array.nbytes if isinstance(array, np.ndarray) else 0)
 
-        gray = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
+            valid = self.validate_frame(array)
+            if not valid:
+                return ""
 
-        pil_img = self.convert_to_pil_image(gray)
-        return pytesseract.image_to_string(
-            pil_img, lang=self.language, config="--oem 3 --psm 6"
-        ).strip()
+            gray = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
+
+            pil_img = self.convert_to_pil_image(gray)
+            return pytesseract.image_to_string(
+                pil_img, lang=self.language, config="--oem 3 --psm 6"
+            ).strip()
