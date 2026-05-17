@@ -139,3 +139,52 @@ def test_parse_cors_origins_ignores_empty_entries():
         "http://localhost:3000",
         "https://app.example.com",
     ]
+
+
+# ---------------------------------------------------------------------------
+# Trust-score weight validation tests (Issue #166)
+# ---------------------------------------------------------------------------
+
+
+def test_trust_score_weights_valid_exact_sum():
+    """Weights that sum to exactly 1.0 must not raise."""
+    env_vars = {"TRUST_SCORE_W1": "0.5", "TRUST_SCORE_W2": "0.3", "TRUST_SCORE_W3": "0.2"}
+    with patch.dict(os.environ, env_vars, clear=False):
+        from core.config import Settings
+
+        settings = Settings()  # must not raise
+        assert settings.TRUST_SCORE_W1 == 0.5
+        assert settings.TRUST_SCORE_W2 == 0.3
+        assert settings.TRUST_SCORE_W3 == 0.2
+
+
+def test_trust_score_weights_valid_within_tolerance():
+    """Weights whose sum is within ±0.001 of 1.0 must not raise."""
+    # 0.5005 + 0.3 + 0.2 = 1.0005 → |1.0005 - 1.0| = 0.0005 ≤ 0.001
+    env_vars = {"TRUST_SCORE_W1": "0.5005", "TRUST_SCORE_W2": "0.3", "TRUST_SCORE_W3": "0.2"}
+    with patch.dict(os.environ, env_vars, clear=False):
+        from core.config import Settings
+
+        Settings()  # must not raise
+
+
+def test_trust_score_weights_invalid_sum_above_tolerance():
+    """Weights summing more than 0.001 above 1.0 must raise ValueError."""
+    # 0.6 + 0.3 + 0.2 = 1.1 → clearly outside tolerance
+    env_vars = {"TRUST_SCORE_W1": "0.6", "TRUST_SCORE_W2": "0.3", "TRUST_SCORE_W3": "0.2"}
+    with patch.dict(os.environ, env_vars, clear=False):
+        from core.config import Settings
+
+        with pytest.raises(ValueError, match="TRUST_SCORE_W1 \\+ TRUST_SCORE_W2 \\+ TRUST_SCORE_W3"):
+            Settings()
+
+
+def test_trust_score_weights_invalid_sum_below_tolerance():
+    """Weights summing more than 0.001 below 1.0 must raise ValueError."""
+    # 0.3 + 0.3 + 0.2 = 0.8 → clearly outside tolerance
+    env_vars = {"TRUST_SCORE_W1": "0.3", "TRUST_SCORE_W2": "0.3", "TRUST_SCORE_W3": "0.2"}
+    with patch.dict(os.environ, env_vars, clear=False):
+        from core.config import Settings
+
+        with pytest.raises(ValueError, match="TRUST_SCORE_W1 \\+ TRUST_SCORE_W2 \\+ TRUST_SCORE_W3"):
+            Settings()

@@ -5,6 +5,7 @@ Modules should import settings from here instead of os.getenv().
 
 import os
 from dataclasses import dataclass, field
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -67,6 +68,11 @@ class Settings:
         ]
     )
 
+    # Trust Score Weights — must sum to 1.0 (validated in __post_init__)
+    TRUST_SCORE_W1: float = 0.5
+    TRUST_SCORE_W2: float = 0.3
+    TRUST_SCORE_W3: float = 0.2
+
     def __post_init__(self):
         """Load environment variables and override defaults."""
         # LLM Configuration
@@ -115,6 +121,14 @@ class Settings:
         # MASKED_REGIONS and SENSITIVE_PATTERNS are complex types,
         # usually handled via JSON strings in .env if needed.
         # For now, we use defaults or manual override.
+
+        # Validate trust-score weights sum to 1.0 (tolerance ±0.001)
+        _total = self.TRUST_SCORE_W1 + self.TRUST_SCORE_W2 + self.TRUST_SCORE_W3
+        if abs(_total - 1.0) > 0.001:
+            raise ValueError(
+                f"TRUST_SCORE_W1 + TRUST_SCORE_W2 + TRUST_SCORE_W3 must equal 1.0; "
+                f"got {self.TRUST_SCORE_W1} + {self.TRUST_SCORE_W2} + {self.TRUST_SCORE_W3} = {_total:.6f}"
+            )
 
     def validate_required(self) -> None:
         """
