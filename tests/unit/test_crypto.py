@@ -13,13 +13,12 @@ def test_round_trip_encrypt_decrypt():
 
 def test_encrypted_data_is_not_plaintext():
     """Encrypted string should not match the original."""
-
-    original = "Sensitive password: AnaDeArmas"
+    original = "User edited line 42 in main.py"
     encrypted = encrypt(original)
 
     assert encrypted != original
-    assert "secret123" not in encrypted
-    assert "password" not in encrypted
+    assert "edited line 42" not in encrypted
+    assert "main.py" not in encrypted
 
 def test_empty_string_encryption():
     """Empty strings should encrypt and decrypt without error."""
@@ -40,7 +39,7 @@ def test_unicode_and_special_chars():
 
 def test_invalid_ciphertext_raises_error():
     """Trying to decrypt garbage should raise an exception."""
-    
+
     from cryptography.fernet import InvalidToken
 
     with pytest.raises(InvalidToken):
