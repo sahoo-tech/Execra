@@ -6,6 +6,7 @@ from typing import Optional
 
 import mss
 import numpy as np
+from core.monitoring.metrics_store import metrics_store
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,7 @@ class ScreenCapture:
                         def safe_put() -> None:
                             try:
                                 queue.put_nowait(frame)
+                                metrics_store.increment(metrics_store.FRAMES_CAPTURED)
                                 logger.debug("Frame queued successfully")
 
                             except asyncio.QueueFull:

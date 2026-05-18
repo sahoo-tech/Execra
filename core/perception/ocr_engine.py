@@ -2,6 +2,7 @@ import pytesseract
 import numpy as np
 from PIL import Image
 import cv2
+from core.monitoring.metrics_store import metrics_store
 
 
 class OCREngine:
@@ -78,6 +79,8 @@ class OCREngine:
                         "conf": conf,
                     }
                 )
+
+        metrics_store.increment(metrics_store.OCR_CALLS)
         return final
 
     def extract_dig_text(self, array: np.ndarray) -> str:
@@ -89,6 +92,7 @@ class OCREngine:
         gray = cv2.cvtColor(array, cv2.COLOR_BGR2GRAY)
 
         pil_img = self.convert_to_pil_image(gray)
+        metrics_store.increment(metrics_store.OCR_CALLS)
         return pytesseract.image_to_string(
             pil_img, lang=self.language, config="--oem 3 --psm 6"
         ).strip()

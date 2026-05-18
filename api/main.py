@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import status, mode
 from api.routes import actions, context
+from api.routes import metrics
+
 
 
 from core.config import settings
@@ -52,3 +54,6 @@ app.include_router(mode.router, prefix="/api/v1")
 # Action log and session context endpoints
 app.include_router(actions.router, prefix="/api/v1")
 app.include_router(context.router, prefix="/api/v1")
+app.include_router(metrics.router, prefix="/api/v1")
+app.include_router(metrics.router, prefix="/api/v1")
+app.include_router(metrics.router, prefix="/api/v1")
