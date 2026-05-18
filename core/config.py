@@ -5,6 +5,7 @@ Modules should import settings from here instead of os.getenv().
 
 import os
 from dataclasses import dataclass, field
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -52,6 +53,17 @@ class Settings:
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
+
+    # WebSocket Security
+    # WS_API_TOKEN: set to a non-empty secret in production; empty string disables
+    # auth with a warning log (dev-only convenience).
+    WS_API_TOKEN: str = ""
+    # Maximum number of concurrent WebSocket guidance connections.
+    WS_MAX_CONNECTIONS: int = 10
+    # Sliding-window rate limit: at most WS_RATE_LIMIT_MESSAGES messages
+    # per WS_RATE_LIMIT_WINDOW_S seconds per connection.
+    WS_RATE_LIMIT_MESSAGES: int = 30
+    WS_RATE_LIMIT_WINDOW_S: int = 60
 
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
@@ -108,6 +120,16 @@ class Settings:
             self.TRUST_SCORE_W2 = float(env_val)
         if env_val := os.getenv("TRUST_SCORE_W3"):
             self.TRUST_SCORE_W3 = float(env_val)
+
+        # WebSocket Security
+        if env_val := os.getenv("WS_API_TOKEN"):
+            self.WS_API_TOKEN = env_val
+        if env_val := os.getenv("WS_MAX_CONNECTIONS"):
+            self.WS_MAX_CONNECTIONS = int(env_val)
+        if env_val := os.getenv("WS_RATE_LIMIT_MESSAGES"):
+            self.WS_RATE_LIMIT_MESSAGES = int(env_val)
+        if env_val := os.getenv("WS_RATE_LIMIT_WINDOW_S"):
+            self.WS_RATE_LIMIT_WINDOW_S = int(env_val)
 
         # Privacy Configuration
         if env_val := os.getenv("PRIVACY_MASKING_ENABLED"):
