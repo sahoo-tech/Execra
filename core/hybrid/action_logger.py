@@ -4,7 +4,9 @@ from typing import Optional, Literal
 from pydantic import BaseModel
 import aiosqlite
 import os
-
+import logging
+from core.security.session_signer import SessionSigner
+import json
 
 class ActionRecord(BaseModel):
     id: str
@@ -15,6 +17,7 @@ class ActionRecord(BaseModel):
     domain: Literal["digital", "physical"]
     was_guided: bool
     guidance_confidence: float | None
+    tampered: bool = False
 
 class ActionLogger:
     """Records user actions to SQLite and maintains an in-memory undo stack."""
@@ -39,7 +42,8 @@ class ActionLogger:
                     description TEXT,
                     domain TEXT,
                     was_guided INTEGER,
-                    guidance_confidence REAL
+                    guidance_confidence REAL,
+                    signature TEXT
                 )
             """)
             await db.commit()
@@ -50,6 +54,11 @@ class ActionLogger:
 
         # Add to in-memory deque
         self._stack.append(action)
+
+
+        #---NEW:Cryptographic signing---
+        signer = SessionSigner()
+        signature = signer.sign(json.loads(action.model_dump_json()))
 
         # Save to SQLite
         async with aiosqlite.connect(self.db_path) as db:
@@ -63,7 +72,8 @@ class ActionLogger:
                 action.description,
                 action.domain,
                 int(action.was_guided),
-                action.guidance_confidence
+                action.guidance_confidence,
+                signature
             ))
             await db.commit()
     
@@ -79,25 +89,44 @@ class ActionLogger:
 
         async with aiosqlite.connect(self.db_path) as db:
             cursor = await db.execute("""
-                SELECT * FROM action_log
-                ORDER BY timestamp DESC
+                SELECT id, session_id, timestamp, type, description, 
+                       domain, was_guided, guidance_confidence, signature
+                FROM action_log 
+                ORDER BY timestamp DESC 
                 LIMIT ? OFFSET ?
             """, (limit, offset))
             rows = await cursor.fetchall()
+        
+        signer = SessionSigner()
+        history = []
 
-        return [
-            ActionRecord(
-                id=row[0],
-                session_id=row[1],
-                timestamp=datetime.fromisoformat(row[2]),
-                type=row[3],
-                description=row[4],
-                domain=row[5],
-                was_guided=bool(row[6]),
-                guidance_confidence=row[7]
-            )
-            for row in rows
-        ]
+        for row in rows:
+            record_data={
+                "id":row[0],
+                "session id":row[1],
+                "timestamp":datetime.fromisoformat(row[2]),
+                "type":row[3],
+                "description":row[4],
+                "domain":row[5],
+                "was_guided":bool(row[6]),
+                "guidance_confidence":row[7],
+            }
+            db_signature = row[8]
+
+            record = ActionRecord(**record_data)
+
+            is_valid = signer.verify(json.loads(record.model_dump_json()), db_signature) if db_signature else False
+            if not is_valid:
+                logging.critical(f"Tamper detected on record ID: {record.id}")
+                setattr(record,'tampered',True)
+            else:
+                setattr(record,'tampered',False)
+            
+            history.append(record)
+        return history
+
+        
+            
     async def clear_session(self, session_id: str) -> None:
         """Delete all actions for the session from SQLite and clear the in-memory stack."""
         await self._init_db()  # ensure table exists
