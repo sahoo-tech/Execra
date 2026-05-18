@@ -53,6 +53,9 @@ class Settings:
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
 
+    # Encryption Configuration
+    ENCRYPTION_KEY: str = ""
+
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
     MASKED_REGIONS: list = field(
@@ -108,6 +111,10 @@ class Settings:
             self.TRUST_SCORE_W2 = float(env_val)
         if env_val := os.getenv("TRUST_SCORE_W3"):
             self.TRUST_SCORE_W3 = float(env_val)
+
+        # Encryption Configuration
+        if env_val := os.getenv("ENCRYPTION_KEY"):
+            self.ENCRYPTION_KEY = env_val
 
         # Privacy Configuration
         if env_val := os.getenv("PRIVACY_MASKING_ENABLED"):
