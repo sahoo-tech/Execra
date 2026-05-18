@@ -4,6 +4,8 @@ from typing import Optional, Literal
 from pydantic import BaseModel
 import aiosqlite
 import os
+from core.security.crypto import encrypt,decrypt
+
 
 
 class ActionRecord(BaseModel):
@@ -60,7 +62,7 @@ class ActionLogger:
                 action.session_id,
                 action.timestamp.isoformat(),
                 action.type,
-                action.description,
+                encrypt(action.description),
                 action.domain,
                 int(action.was_guided),
                 action.guidance_confidence
@@ -91,7 +93,7 @@ class ActionLogger:
                 session_id=row[1],
                 timestamp=datetime.fromisoformat(row[2]),
                 type=row[3],
-                description=row[4],
+                description=decrypt(row[4]),
                 domain=row[5],
                 was_guided=bool(row[6]),
                 guidance_confidence=row[7]
