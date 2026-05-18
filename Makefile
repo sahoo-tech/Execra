@@ -10,7 +10,7 @@ DOCKER_COMPOSE = docker-compose
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install dev test test-unit test-integration coverage lint format docs models health docker-up docker-down clean
+.PHONY: help install dev test test-unit test-integration coverage lint format docs models health docker-up docker-down clean eval
 
 # Default target: show help
 help:
@@ -29,6 +29,7 @@ help:
 	@echo "  make docker-up          Start services with Docker Compose"
 	@echo "  make docker-down        Stop Docker Compose services"
 	@echo "  make clean              Remove temporary files and caches"
+	@echo "  make eval               Run guidance quality evaluation and baseline comparison"
 
 # Prerequisite: requirements.txt and requirements-dev.txt must exist
 install:
@@ -86,3 +87,8 @@ docker-down:
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	rm -rf .pytest_cache htmlcov/ logs/
+
+# Run guidance quality evaluation: full report + baseline comparison
+eval:
+	$(PYTHON) -m research.eval.evaluator --dataset research/eval/eval_dataset.json
+	$(PYTHON) -m research.eval.compare_baselines --dataset research/eval/eval_dataset.json

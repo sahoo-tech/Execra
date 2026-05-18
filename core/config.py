@@ -5,6 +5,7 @@ Modules should import settings from here instead of os.getenv().
 
 import os
 from dataclasses import dataclass, field
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -52,6 +53,11 @@ class Settings:
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
+
+    # Trust Score Weights (must sum to 1.0; validated in __post_init__)
+    TRUST_SCORE_W1: float = 0.5
+    TRUST_SCORE_W2: float = 0.3
+    TRUST_SCORE_W3: float = 0.2
 
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True

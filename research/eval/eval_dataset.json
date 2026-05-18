@@ -1,0 +1,896 @@
+{
+  "version": "1.0",
+  "description": "Execra guidance quality benchmark dataset \u00e2\u20ac\u201d 50 scenarios covering syntax, runtime, logical, edge-case, and false-positive control categories.",
+  "trust_score_formula": "score = 0.5 * llm_confidence + 0.3 * (1.0 if rule_validation else 0.0) + 0.2 * execution_trace_match",
+  "routing_thresholds": {
+    "flagged": "trust_score < 0.65 \u00e2\u2020\u2019 debate engine (needs scrutiny)",
+    "not_flagged": "trust_score >= 0.65 \u00e2\u2020\u2019 direct LLM path (confident)"
+  },
+  "categories": {
+    "syntax": {
+      "count": 15,
+      "ids": "syn001\u00e2\u20ac\u201csyn015",
+      "distribution": "13 TP + 1 FN + 1 FP"
+    },
+    "runtime": {
+      "count": 15,
+      "ids": "run001\u00e2\u20ac\u201crun015",
+      "distribution": "13 TP + 2 FN"
+    },
+    "logical": {
+      "count": 10,
+      "ids": "log001\u00e2\u20ac\u201clog010",
+      "distribution": "9 TP + 1 FN"
+    },
+    "edge_case": {
+      "count": 5,
+      "ids": "edg001\u00e2\u20ac\u201cedg005",
+      "distribution": "4 TP + 1 FN"
+    },
+    "false_positive_control": {
+      "count": 5,
+      "ids": "fp001\u00e2\u20ac\u201cfp005",
+      "distribution": "4 TN + 1 FP"
+    }
+  },
+  "dataset_summary": {
+    "total": 50,
+    "true_positives": 39,
+    "false_negatives": 5,
+    "true_negatives": 4,
+    "false_positives": 2,
+    "note": "Distribution: syntax(13TP+1FN+1FP), runtime(13TP+2FN), logical(9TP+1FN), edge_case(4TP+1FN), false_positive_control(4TN+1FP). Total TP=39, FN=5, TN=4, FP=2."
+  },
+  "scenarios": [
+    {
+      "id": "syn001",
+      "category": "syntax",
+      "difficulty": "easy",
+      "description": "Missing colon at the end of a function definition. Python raises a SyntaxError before execution begins.",
+      "buggy_code": "def greet(name)\n    print(f'Hello, {name}')",
+      "expected_guidance": "Add a colon after the function signature: `def greet(name):`. Python requires a colon to open every compound statement block.",
+      "ground_truth_fix": "def greet(name):\n    print(f'Hello, {name}')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.3,
+        "rule_validation": false,
+        "execution_trace_match": 0.2
+      },
+      "trust_score": 0.19,
+      "simulated_latency_ms": 720
+    },
+    {
+      "id": "syn002",
+      "category": "syntax",
+      "difficulty": "easy",
+      "description": "Mismatched parentheses in a print call \u00e2\u20ac\u201d an extra closing paren causes a SyntaxError.",
+      "buggy_code": "print('hello world'))",
+      "expected_guidance": "Remove the extra closing parenthesis. The statement should read `print('hello world')`.",
+      "ground_truth_fix": "print('hello world')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.25,
+        "rule_validation": false,
+        "execution_trace_match": 0.15
+      },
+      "trust_score": 0.155,
+      "simulated_latency_ms": 690
+    },
+    {
+      "id": "syn003",
+      "category": "syntax",
+      "difficulty": "easy",
+      "description": "Incorrect indentation inside an if-block causes an IndentationError at parse time.",
+      "buggy_code": "if True:\nprint('indented wrong')",
+      "expected_guidance": "Indent the body of the if-block by four spaces: `    print('indented wrong')`.",
+      "ground_truth_fix": "if True:\n    print('indented wrong')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.28,
+        "rule_validation": false,
+        "execution_trace_match": 0.18
+      },
+      "trust_score": 0.176,
+      "simulated_latency_ms": 710
+    },
+    {
+      "id": "syn004",
+      "category": "syntax",
+      "difficulty": "easy",
+      "description": "Using a single equals sign inside a conditional expression instead of the comparison operator ==.",
+      "buggy_code": "if x = 10:\n    print(x)",
+      "expected_guidance": "Replace `=` with `==` in the condition: `if x == 10:`. The `=` operator is for assignment, not comparison.",
+      "ground_truth_fix": "if x == 10:\n    print(x)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.32,
+        "rule_validation": false,
+        "execution_trace_match": 0.22
+      },
+      "trust_score": 0.204,
+      "simulated_latency_ms": 730
+    },
+    {
+      "id": "syn005",
+      "category": "syntax",
+      "difficulty": "easy",
+      "description": "String literal is never closed \u00e2\u20ac\u201d a missing closing quote causes a SyntaxError.",
+      "buggy_code": "message = 'hello world\nprint(message)",
+      "expected_guidance": "Close the string literal with a matching single quote: `message = 'hello world'`.",
+      "ground_truth_fix": "message = 'hello world'\nprint(message)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.27,
+        "rule_validation": false,
+        "execution_trace_match": 0.17
+      },
+      "trust_score": 0.169,
+      "simulated_latency_ms": 700
+    },
+    {
+      "id": "syn006",
+      "category": "syntax",
+      "difficulty": "medium",
+      "description": "Incorrect use of `else` without a preceding `if`, producing an invalid syntax error.",
+      "buggy_code": "x = 5\nelse:\n    print('no if')",
+      "expected_guidance": "An `else` clause must always follow an `if` block. Add a matching `if` condition before the `else`.",
+      "ground_truth_fix": "x = 5\nif x != 5:\n    pass\nelse:\n    print('no if')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.4,
+        "rule_validation": false,
+        "execution_trace_match": 0.3
+      },
+      "trust_score": 0.26,
+      "simulated_latency_ms": 980
+    },
+    {
+      "id": "syn007",
+      "category": "syntax",
+      "difficulty": "medium",
+      "description": "A `return` statement is used outside any function, which is a SyntaxError in Python.",
+      "buggy_code": "x = 10\nreturn x",
+      "expected_guidance": "Move the `return` statement inside a function body. `return` cannot appear at module level.",
+      "ground_truth_fix": "def get_x():\n    x = 10\n    return x",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.38,
+        "rule_validation": false,
+        "execution_trace_match": 0.28
+      },
+      "trust_score": 0.246,
+      "simulated_latency_ms": 960
+    },
+    {
+      "id": "syn008",
+      "category": "syntax",
+      "difficulty": "medium",
+      "description": "f-string expression contains an unterminated inner expression, producing a SyntaxError.",
+      "buggy_code": "name = 'Alice'\nprint(f'Hello {name')",
+      "expected_guidance": "Close the curly brace inside the f-string: `f'Hello {name}'`. Every `{` in an f-string must have a matching `}`.",
+      "ground_truth_fix": "name = 'Alice'\nprint(f'Hello {name}')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.42,
+        "rule_validation": false,
+        "execution_trace_match": 0.32
+      },
+      "trust_score": 0.274,
+      "simulated_latency_ms": 1000
+    },
+    {
+      "id": "syn009",
+      "category": "syntax",
+      "difficulty": "medium",
+      "description": "A lambda body contains a statement (`print`) instead of an expression, which is a SyntaxError.",
+      "buggy_code": "fn = lambda x: print(x); return x",
+      "expected_guidance": "Lambda bodies must be single expressions. Remove the `return` statement or convert to a regular `def` function.",
+      "ground_truth_fix": "def fn(x):\n    print(x)\n    return x",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.44,
+        "rule_validation": false,
+        "execution_trace_match": 0.34
+      },
+      "trust_score": 0.288,
+      "simulated_latency_ms": 1020
+    },
+    {
+      "id": "syn010",
+      "category": "syntax",
+      "difficulty": "medium",
+      "description": "Mixing tabs and spaces in the same block causes a TabError at parse time.",
+      "buggy_code": "def foo():\n\tx = 1\n    y = 2",
+      "expected_guidance": "Use consistent indentation throughout the function \u00e2\u20ac\u201d prefer four spaces per level. Run `autopep8` or your editor's reformat to fix mixed tabs/spaces.",
+      "ground_truth_fix": "def foo():\n    x = 1\n    y = 2",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.45,
+        "rule_validation": false,
+        "execution_trace_match": 0.35
+      },
+      "trust_score": 0.295,
+      "simulated_latency_ms": 1030
+    },
+    {
+      "id": "syn011",
+      "category": "syntax",
+      "difficulty": "hard",
+      "description": "A decorator is applied to a non-function expression, causing a SyntaxError at the decorator line.",
+      "buggy_code": "@staticmethod\nx = 42",
+      "expected_guidance": "Decorators can only be applied to function or class definitions. Move `@staticmethod` immediately above a `def` statement inside a class.",
+      "ground_truth_fix": "class MyClass:\n    @staticmethod\n    def x():\n        return 42",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.5,
+        "rule_validation": false,
+        "execution_trace_match": 0.4
+      },
+      "trust_score": 0.33,
+      "simulated_latency_ms": 1350
+    },
+    {
+      "id": "syn012",
+      "category": "syntax",
+      "difficulty": "hard",
+      "description": "Walrus operator used in a context that does not support it (top-level assignment expression), raising a SyntaxError.",
+      "buggy_code": "x := 10\nprint(x)",
+      "expected_guidance": "The walrus operator `:=` is only valid inside an expression (e.g., in a `while` or `if` condition). Use a plain assignment `x = 10` at the statement level.",
+      "ground_truth_fix": "x = 10\nprint(x)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.52,
+        "rule_validation": false,
+        "execution_trace_match": 0.42
+      },
+      "trust_score": 0.344,
+      "simulated_latency_ms": 1380
+    },
+    {
+      "id": "syn013",
+      "category": "syntax",
+      "difficulty": "hard",
+      "description": "A `yield` expression appears outside a function, which Python reports as a SyntaxError.",
+      "buggy_code": "data = [1, 2, 3]\nyield data[0]",
+      "expected_guidance": "Wrap the `yield` inside a generator function defined with `def`. `yield` cannot appear at module or class scope.",
+      "ground_truth_fix": "def gen():\n    data = [1, 2, 3]\n    yield data[0]",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.53,
+        "rule_validation": false,
+        "execution_trace_match": 0.43
+      },
+      "trust_score": 0.351,
+      "simulated_latency_ms": 1400
+    },
+    {
+      "id": "syn014",
+      "category": "syntax",
+      "difficulty": "hard",
+      "description": "A subtly misused positional-only separator `/` is placed after a `*args` parameter, which is syntactically invalid but the LLM assigns high confidence because the surrounding code looks correct. (FALSE NEGATIVE)",
+      "buggy_code": "def func(*args, /, x=0):\n    return args, x",
+      "expected_guidance": "The positional-only separator `/` must appear before `*args`, not after it. Reorder parameters: `def func(/, *args, x=0)` or redesign the signature.",
+      "ground_truth_fix": "def func(*args, x=0):\n    return args, x",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.95,
+        "rule_validation": false,
+        "execution_trace_match": 0.95
+      },
+      "trust_score": 0.665,
+      "simulated_latency_ms": 390
+    },
+    {
+      "id": "syn015",
+      "category": "syntax",
+      "difficulty": "medium",
+      "description": "A function definition uses *args and **kwargs without a separating comma, producing a SyntaxError at parse time.",
+      "buggy_code": "def handler(*args **kwargs):\n    return args, kwargs",
+      "expected_guidance": "Add a comma between *args and **kwargs in the function signature: def handler(*args, **kwargs).",
+      "ground_truth_fix": "def handler(*args, **kwargs):\n    return args, kwargs",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.3,
+        "rule_validation": false,
+        "execution_trace_match": 0.15
+      },
+      "trust_score": 0.18,
+      "simulated_latency_ms": 780
+    },
+    {
+      "id": "run001",
+      "category": "runtime",
+      "difficulty": "easy",
+      "description": "Division by zero \u00e2\u20ac\u201d a literal zero denominator raises a ZeroDivisionError at runtime.",
+      "buggy_code": "result = 10 / 0",
+      "expected_guidance": "Guard against zero denominators: `result = 10 / x if x != 0 else float('inf')` or raise a descriptive error.",
+      "ground_truth_fix": "x = 5\nresult = 10 / x if x != 0 else float('inf')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.3,
+        "rule_validation": false,
+        "execution_trace_match": 0.2
+      },
+      "trust_score": 0.19,
+      "simulated_latency_ms": 715
+    },
+    {
+      "id": "run002",
+      "category": "runtime",
+      "difficulty": "easy",
+      "description": "Accessing an undefined variable raises a NameError because it was never assigned before use.",
+      "buggy_code": "print(total)",
+      "expected_guidance": "Define `total` before using it, e.g., `total = 0`. Accessing an undefined name raises NameError.",
+      "ground_truth_fix": "total = 0\nprint(total)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.28,
+        "rule_validation": false,
+        "execution_trace_match": 0.18
+      },
+      "trust_score": 0.176,
+      "simulated_latency_ms": 700
+    },
+    {
+      "id": "run003",
+      "category": "runtime",
+      "difficulty": "easy",
+      "description": "Index out of range \u00e2\u20ac\u201d accessing element index 5 on a 3-element list raises IndexError.",
+      "buggy_code": "nums = [1, 2, 3]\nprint(nums[5])",
+      "expected_guidance": "Use a valid index (0\u00e2\u20ac\u201c2) or check `if len(nums) > 5` before accessing. Index 5 does not exist in a list of length 3.",
+      "ground_truth_fix": "nums = [1, 2, 3]\nprint(nums[2])",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.29,
+        "rule_validation": false,
+        "execution_trace_match": 0.19
+      },
+      "trust_score": 0.183,
+      "simulated_latency_ms": 705
+    },
+    {
+      "id": "run004",
+      "category": "runtime",
+      "difficulty": "easy",
+      "description": "Calling a method on None \u00e2\u20ac\u201d assigning None to a variable then calling `.split()` raises AttributeError.",
+      "buggy_code": "text = None\nwords = text.split()",
+      "expected_guidance": "Check for None before calling string methods: `if text is not None: words = text.split()`. Alternatively initialise `text` to an empty string.",
+      "ground_truth_fix": "text = ''\nwords = text.split()",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.31,
+        "rule_validation": false,
+        "execution_trace_match": 0.21
+      },
+      "trust_score": 0.197,
+      "simulated_latency_ms": 720
+    },
+    {
+      "id": "run005",
+      "category": "runtime",
+      "difficulty": "easy",
+      "description": "TypeError from adding a string and an integer without explicit conversion.",
+      "buggy_code": "age = 25\nprint('Age: ' + age)",
+      "expected_guidance": "Convert the integer to a string first: `print('Age: ' + str(age))` or use an f-string: `print(f'Age: {age}')`.",
+      "ground_truth_fix": "age = 25\nprint(f'Age: {age}')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.32,
+        "rule_validation": false,
+        "execution_trace_match": 0.22
+      },
+      "trust_score": 0.204,
+      "simulated_latency_ms": 725
+    },
+    {
+      "id": "run006",
+      "category": "runtime",
+      "difficulty": "medium",
+      "description": "Infinite recursion without a base case causes a RecursionError when the call stack is exhausted.",
+      "buggy_code": "def countdown(n):\n    print(n)\n    countdown(n - 1)",
+      "expected_guidance": "Add a base case to stop recursion: `if n <= 0: return`. Without it, the function recurses indefinitely until Python raises RecursionError.",
+      "ground_truth_fix": "def countdown(n):\n    if n <= 0:\n        return\n    print(n)\n    countdown(n - 1)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.42,
+        "rule_validation": false,
+        "execution_trace_match": 0.32
+      },
+      "trust_score": 0.274,
+      "simulated_latency_ms": 990
+    },
+    {
+      "id": "run007",
+      "category": "runtime",
+      "difficulty": "medium",
+      "description": "KeyError when accessing a dictionary with a key that does not exist.",
+      "buggy_code": "d = {'a': 1}\nprint(d['b'])",
+      "expected_guidance": "Use `d.get('b', default)` to safely access missing keys, or check `if 'b' in d` first.",
+      "ground_truth_fix": "d = {'a': 1}\nprint(d.get('b', None))",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.43,
+        "rule_validation": false,
+        "execution_trace_match": 0.33
+      },
+      "trust_score": 0.281,
+      "simulated_latency_ms": 1000
+    },
+    {
+      "id": "run008",
+      "category": "runtime",
+      "difficulty": "medium",
+      "description": "Unpacking a list of 3 elements into 2 variables raises ValueError at runtime.",
+      "buggy_code": "a, b = [1, 2, 3]",
+      "expected_guidance": "Either add a third target variable (`a, b, c = [1, 2, 3]`) or use starred assignment (`a, *b = [1, 2, 3]`) to capture the tail.",
+      "ground_truth_fix": "a, b, c = [1, 2, 3]",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.44,
+        "rule_validation": false,
+        "execution_trace_match": 0.34
+      },
+      "trust_score": 0.288,
+      "simulated_latency_ms": 1010
+    },
+    {
+      "id": "run009",
+      "category": "runtime",
+      "difficulty": "medium",
+      "description": "Opening a file in write mode ('w') on a path that does not exist in a read-only directory raises PermissionError.",
+      "buggy_code": "with open('/etc/passwd', 'w') as f:\n    f.write('data')",
+      "expected_guidance": "Write to a user-writable directory such as `/tmp` or the current working directory. Never write to system files like `/etc/passwd`.",
+      "ground_truth_fix": "with open('/tmp/output.txt', 'w') as f:\n    f.write('data')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.45,
+        "rule_validation": false,
+        "execution_trace_match": 0.35
+      },
+      "trust_score": 0.295,
+      "simulated_latency_ms": 1020
+    },
+    {
+      "id": "run010",
+      "category": "runtime",
+      "difficulty": "medium",
+      "description": "Calling `.append()` on a tuple (immutable sequence) raises AttributeError at runtime.",
+      "buggy_code": "t = (1, 2, 3)\nt.append(4)",
+      "expected_guidance": "Tuples are immutable. Use a list instead: `t = [1, 2, 3]` and then `t.append(4)`, or concatenate tuples: `t = t + (4,)`.",
+      "ground_truth_fix": "t = [1, 2, 3]\nt.append(4)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.4,
+        "rule_validation": false,
+        "execution_trace_match": 0.3
+      },
+      "trust_score": 0.26,
+      "simulated_latency_ms": 970
+    },
+    {
+      "id": "run011",
+      "category": "runtime",
+      "difficulty": "hard",
+      "description": "Mutating a list while iterating over it with a `for` loop causes elements to be skipped at runtime.",
+      "buggy_code": "items = [1, 2, 3, 4]\nfor i in items:\n    if i % 2 == 0:\n        items.remove(i)",
+      "expected_guidance": "Never mutate a list while iterating it. Use a list comprehension instead: `items = [i for i in items if i % 2 != 0]`.",
+      "ground_truth_fix": "items = [1, 2, 3, 4]\nitems = [i for i in items if i % 2 != 0]",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.5,
+        "rule_validation": false,
+        "execution_trace_match": 0.4
+      },
+      "trust_score": 0.33,
+      "simulated_latency_ms": 1360
+    },
+    {
+      "id": "run012",
+      "category": "runtime",
+      "difficulty": "hard",
+      "description": "Using a mutable default argument (list) causes state to persist across function calls, producing surprising runtime behaviour.",
+      "buggy_code": "def append_to(val, lst=[]):\n    lst.append(val)\n    return lst",
+      "expected_guidance": "Use `None` as the default and create a new list inside the function: `def append_to(val, lst=None): if lst is None: lst = []`.",
+      "ground_truth_fix": "def append_to(val, lst=None):\n    if lst is None:\n        lst = []\n    lst.append(val)\n    return lst",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.53,
+        "rule_validation": false,
+        "execution_trace_match": 0.43
+      },
+      "trust_score": 0.351,
+      "simulated_latency_ms": 1420
+    },
+    {
+      "id": "run013",
+      "category": "runtime",
+      "difficulty": "hard",
+      "description": "Integer overflow simulation: converting very large float to int without range check causes unexpected value on 32-bit contexts.",
+      "buggy_code": "import sys\nval = int(sys.float_info.max)\nprint(val.bit_length())",
+      "expected_guidance": "Check that the float value fits within your target integer range before conversion. For large values, consider using Python's arbitrary-precision integers explicitly and documenting the expected range.",
+      "ground_truth_fix": "import sys\nif sys.float_info.max < 2**63:\n    val = int(sys.float_info.max)\n    print(val.bit_length())\nelse:\n    print('Value too large for intended range')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.54,
+        "rule_validation": false,
+        "execution_trace_match": 0.44
+      },
+      "trust_score": 0.358,
+      "simulated_latency_ms": 1440
+    },
+    {
+      "id": "run014",
+      "category": "runtime",
+      "difficulty": "hard",
+      "description": "A thread-safety violation in shared counter update looks correct to the LLM because locking syntax is present but the lock is not actually held during the increment. (FALSE NEGATIVE)",
+      "buggy_code": "import threading\nlock = threading.Lock()\ncounter = 0\ndef inc():\n    lock.acquire()\n    counter += 1",
+      "expected_guidance": "The lock is acquired but never released, causing a deadlock. Use `with lock:` as a context manager, and also note that `counter` must be declared `nonlocal` or stored as a mutable container.",
+      "ground_truth_fix": "import threading\nlock = threading.Lock()\ncounter = [0]\ndef inc():\n    with lock:\n        counter[0] += 1",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.96,
+        "rule_validation": false,
+        "execution_trace_match": 0.92
+      },
+      "trust_score": 0.664,
+      "simulated_latency_ms": 380
+    },
+    {
+      "id": "run015",
+      "category": "runtime",
+      "difficulty": "hard",
+      "description": "Generator is exhausted after first full iteration; second iteration silently yields nothing, which the LLM misses as correct. (FALSE NEGATIVE)",
+      "buggy_code": "def gen():\n    yield from range(3)\ng = gen()\nlist(g)\nprint(list(g))",
+      "expected_guidance": "A generator can only be iterated once. Call `gen()` again for each full pass: `print(list(gen()))`, or materialise it into a list on first use.",
+      "ground_truth_fix": "def gen():\n    yield from range(3)\nprint(list(gen()))\nprint(list(gen()))",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.98,
+        "rule_validation": false,
+        "execution_trace_match": 0.88
+      },
+      "trust_score": 0.666,
+      "simulated_latency_ms": 185
+    },
+    {
+      "id": "log001",
+      "category": "logical",
+      "difficulty": "easy",
+      "description": "Off-by-one error \u00e2\u20ac\u201d loop condition uses `<` instead of `<=`, so the final element is never processed.",
+      "buggy_code": "total = 0\nfor i in range(1, 10):\n    total += i",
+      "expected_guidance": "Change `range(1, 10)` to `range(1, 11)` to include the value 10 in the summation.",
+      "ground_truth_fix": "total = 0\nfor i in range(1, 11):\n    total += i",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.35,
+        "rule_validation": false,
+        "execution_trace_match": 0.25
+      },
+      "trust_score": 0.225,
+      "simulated_latency_ms": 740
+    },
+    {
+      "id": "log002",
+      "category": "logical",
+      "difficulty": "easy",
+      "description": "Variable is incremented before being used in a condition check, so the guard fires one step too late.",
+      "buggy_code": "count = 0\ncount += 1\nif count == 0:\n    print('empty')",
+      "expected_guidance": "Check the condition before incrementing, or adjust the condition to `count == 1` if you intend to detect the first increment.",
+      "ground_truth_fix": "count = 0\nif count == 0:\n    print('empty')\ncount += 1",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.33,
+        "rule_validation": false,
+        "execution_trace_match": 0.23
+      },
+      "trust_score": 0.211,
+      "simulated_latency_ms": 730
+    },
+    {
+      "id": "log003",
+      "category": "logical",
+      "difficulty": "easy",
+      "description": "Boolean logic inversion \u00e2\u20ac\u201d the condition guards the wrong branch, printing 'odd' for even numbers.",
+      "buggy_code": "n = 4\nif n % 2 == 1:\n    print('even')\nelse:\n    print('odd')",
+      "expected_guidance": "Swap the print strings: `print('even')` should be in the `else` branch and `print('odd')` in the `if` branch, or change the condition to `n % 2 == 0`.",
+      "ground_truth_fix": "n = 4\nif n % 2 == 0:\n    print('even')\nelse:\n    print('odd')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.34,
+        "rule_validation": false,
+        "execution_trace_match": 0.24
+      },
+      "trust_score": 0.218,
+      "simulated_latency_ms": 735
+    },
+    {
+      "id": "log004",
+      "category": "logical",
+      "difficulty": "medium",
+      "description": "Accumulator is reset inside the loop, so it never accumulates more than the last element's value.",
+      "buggy_code": "nums = [3, 1, 4, 1, 5]\nfor n in nums:\n    total = 0\n    total += n\nprint(total)",
+      "expected_guidance": "Initialise `total = 0` before the loop, not inside it. As written, `total` is reset on every iteration.",
+      "ground_truth_fix": "nums = [3, 1, 4, 1, 5]\ntotal = 0\nfor n in nums:\n    total += n\nprint(total)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.41,
+        "rule_validation": false,
+        "execution_trace_match": 0.31
+      },
+      "trust_score": 0.267,
+      "simulated_latency_ms": 975
+    },
+    {
+      "id": "log005",
+      "category": "logical",
+      "difficulty": "medium",
+      "description": "Wrong operator precedence \u00e2\u20ac\u201d multiplication binds tighter than addition, but the intent was `(a + b) * c`.",
+      "buggy_code": "a, b, c = 2, 3, 4\nresult = a + b * c",
+      "expected_guidance": "Add parentheses to enforce the intended order: `result = (a + b) * c`. Without them Python evaluates `b * c` first per standard precedence.",
+      "ground_truth_fix": "a, b, c = 2, 3, 4\nresult = (a + b) * c",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.43,
+        "rule_validation": false,
+        "execution_trace_match": 0.33
+      },
+      "trust_score": 0.281,
+      "simulated_latency_ms": 990
+    },
+    {
+      "id": "log006",
+      "category": "logical",
+      "difficulty": "medium",
+      "description": "Shallow copy of a nested list means mutations to inner lists affect the original.",
+      "buggy_code": "import copy\norig = [[1, 2], [3, 4]]\ndup = copy.copy(orig)\ndup[0].append(99)",
+      "expected_guidance": "Use `copy.deepcopy(orig)` to create a fully independent copy of nested structures. `copy.copy` only copies the outer list.",
+      "ground_truth_fix": "import copy\norig = [[1, 2], [3, 4]]\ndup = copy.deepcopy(orig)\ndup[0].append(99)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.46,
+        "rule_validation": false,
+        "execution_trace_match": 0.36
+      },
+      "trust_score": 0.302,
+      "simulated_latency_ms": 1010
+    },
+    {
+      "id": "log007",
+      "category": "logical",
+      "difficulty": "medium",
+      "description": "String comparison uses `is` instead of `==`, which checks object identity rather than value equality.",
+      "buggy_code": "s = 'hello'\nif s is 'hello':\n    print('match')",
+      "expected_guidance": "Use `==` for value comparison: `if s == 'hello':`. The `is` operator tests object identity and may fail for dynamically created strings.",
+      "ground_truth_fix": "s = 'hello'\nif s == 'hello':\n    print('match')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.44,
+        "rule_validation": false,
+        "execution_trace_match": 0.34
+      },
+      "trust_score": 0.288,
+      "simulated_latency_ms": 1000
+    },
+    {
+      "id": "log008",
+      "category": "logical",
+      "difficulty": "hard",
+      "description": "Greedy regex matches too much \u00e2\u20ac\u201d `.*` swallows the closing tag, returning the entire string instead of the inner content.",
+      "buggy_code": "import re\nhtml = '<b>bold</b> and <b>more</b>'\nm = re.search(r'<b>(.*)</b>', html)\nprint(m.group(1))",
+      "expected_guidance": "Use a non-greedy quantifier `.*?` to match the shortest possible string: `r'<b>(.*?)</b>'`.",
+      "ground_truth_fix": "import re\nhtml = '<b>bold</b> and <b>more</b>'\nm = re.search(r'<b>(.*?)</b>', html)\nprint(m.group(1))",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.51,
+        "rule_validation": false,
+        "execution_trace_match": 0.41
+      },
+      "trust_score": 0.337,
+      "simulated_latency_ms": 1370
+    },
+    {
+      "id": "log009",
+      "category": "logical",
+      "difficulty": "hard",
+      "description": "Incorrect use of `sorted()` with a key that reverses only part of the tuple, producing an unintended sort order for ties.",
+      "buggy_code": "data = [(1, 'b'), (1, 'a'), (2, 'c')]\ndata.sort(key=lambda x: (-x[0], x[1]))",
+      "expected_guidance": "If the intent is to sort by first element descending and second element ascending, this is correct. If descending on both, change to `key=lambda x: (-x[0], -ord(x[1][0]))`. Verify the intended tiebreak order.",
+      "ground_truth_fix": "data = [(1, 'b'), (1, 'a'), (2, 'c')]\ndata.sort(key=lambda x: (-x[0], x[1]))",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.52,
+        "rule_validation": false,
+        "execution_trace_match": 0.42
+      },
+      "trust_score": 0.344,
+      "simulated_latency_ms": 1390
+    },
+    {
+      "id": "log010",
+      "category": "logical",
+      "difficulty": "hard",
+      "description": "Float precision error causes equality check to fail unexpectedly \u00e2\u20ac\u201d the LLM marks as correct because the arithmetic looks sound. (FALSE NEGATIVE)",
+      "buggy_code": "total = 0.1 + 0.2\nif total == 0.3:\n    print('equal')\nelse:\n    print('not equal')",
+      "expected_guidance": "Floating-point arithmetic is imprecise. Use `math.isclose(total, 0.3)` or `round(total, 10) == 0.3` instead of direct equality comparison.",
+      "ground_truth_fix": "import math\ntotal = 0.1 + 0.2\nif math.isclose(total, 0.3):\n    print('equal')\nelse:\n    print('not equal')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.94,
+        "rule_validation": false,
+        "execution_trace_match": 0.96
+      },
+      "trust_score": 0.662,
+      "simulated_latency_ms": 375
+    },
+    {
+      "id": "edg001",
+      "category": "edge_case",
+      "difficulty": "medium",
+      "description": "Function breaks on an empty list input \u00e2\u20ac\u201d `max()` raises ValueError when called with an empty iterable.",
+      "buggy_code": "def get_max(lst):\n    return max(lst)",
+      "expected_guidance": "Handle the empty list case: `return max(lst) if lst else None`. Calling `max()` on an empty sequence raises ValueError.",
+      "ground_truth_fix": "def get_max(lst):\n    return max(lst) if lst else None",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.38,
+        "rule_validation": false,
+        "execution_trace_match": 0.28
+      },
+      "trust_score": 0.246,
+      "simulated_latency_ms": 960
+    },
+    {
+      "id": "edg002",
+      "category": "edge_case",
+      "difficulty": "medium",
+      "description": "String `.split()` called on an empty string produces `['']` rather than `[]`, causing incorrect length checks.",
+      "buggy_code": "s = ''\nparts = s.split(',')\nif len(parts) == 0:\n    print('empty')",
+      "expected_guidance": "An empty string split by a delimiter returns `['']`, not `[]`. Check `if s == ''` or filter with `[p for p in parts if p]` before counting.",
+      "ground_truth_fix": "s = ''\nparts = [p for p in s.split(',') if p]\nif len(parts) == 0:\n    print('empty')",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.4,
+        "rule_validation": false,
+        "execution_trace_match": 0.3
+      },
+      "trust_score": 0.26,
+      "simulated_latency_ms": 970
+    },
+    {
+      "id": "edg003",
+      "category": "edge_case",
+      "difficulty": "hard",
+      "description": "Integer passed where a sequence is expected \u00e2\u20ac\u201d `range(n)` called with n=0 produces an empty range, causing a silent logic failure.",
+      "buggy_code": "def process(n):\n    for i in range(n):\n        print(i)\nprocess(0)",
+      "expected_guidance": "Guard against zero or negative values before the loop if they are invalid inputs: `if n <= 0: raise ValueError('n must be positive')`. Otherwise document that 0 is a valid no-op.",
+      "ground_truth_fix": "def process(n):\n    if n <= 0:\n        raise ValueError('n must be positive')\n    for i in range(n):\n        print(i)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.45,
+        "rule_validation": false,
+        "execution_trace_match": 0.35
+      },
+      "trust_score": 0.295,
+      "simulated_latency_ms": 1360
+    },
+    {
+      "id": "edg004",
+      "category": "edge_case",
+      "difficulty": "hard",
+      "description": "Dictionary iteration mutates the dict size inside the loop, raising RuntimeError in Python 3.",
+      "buggy_code": "d = {'a': 1, 'b': 2, 'c': 3}\nfor k in d:\n    if d[k] < 2:\n        del d[k]",
+      "expected_guidance": "Iterate over a copy of the keys: `for k in list(d):`. Modifying a dictionary while iterating it directly raises RuntimeError in Python 3.",
+      "ground_truth_fix": "d = {'a': 1, 'b': 2, 'c': 3}\nfor k in list(d):\n    if d[k] < 2:\n        del d[k]",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.48,
+        "rule_validation": false,
+        "execution_trace_match": 0.38
+      },
+      "trust_score": 0.316,
+      "simulated_latency_ms": 1380
+    },
+    {
+      "id": "edg005",
+      "category": "edge_case",
+      "difficulty": "hard",
+      "description": "Unicode surrogate character in a string causes encoding to fail when writing to a UTF-8 file, a subtle edge case the LLM rates highly. (FALSE NEGATIVE)",
+      "buggy_code": "s = 'Hello \\ud83d world'\nwith open('out.txt', 'w', encoding='utf-8') as f:\n    f.write(s)",
+      "expected_guidance": "Surrogate characters (U+D800\u00e2\u20ac\u201cU+DFFF) are not valid in UTF-8. Use `errors='surrogatepass'` or sanitise the string with `s.encode('utf-8', errors='ignore').decode('utf-8')` before writing.",
+      "ground_truth_fix": "s = 'Hello \\ud83d world'\nsafe = s.encode('utf-8', errors='ignore').decode('utf-8')\nwith open('out.txt', 'w', encoding='utf-8') as f:\n    f.write(safe)",
+      "is_correct_code": false,
+      "trust_metadata": {
+        "llm_confidence": 0.97,
+        "rule_validation": false,
+        "execution_trace_match": 0.91
+      },
+      "trust_score": 0.667,
+      "simulated_latency_ms": 395
+    },
+    {
+      "id": "fp001",
+      "category": "false_positive_control",
+      "difficulty": "easy",
+      "description": "A correct list comprehension that filters even numbers \u00e2\u20ac\u201d no bugs present. (TRUE NEGATIVE)",
+      "buggy_code": "evens = [x for x in range(10) if x % 2 == 0]",
+      "expected_guidance": "No changes needed. This list comprehension correctly produces all even numbers from 0 to 9.",
+      "ground_truth_fix": "evens = [x for x in range(10) if x % 2 == 0]",
+      "is_correct_code": true,
+      "trust_metadata": {
+        "llm_confidence": 0.88,
+        "rule_validation": true,
+        "execution_trace_match": 0.85
+      },
+      "trust_score": 0.91,
+      "simulated_latency_ms": 195
+    },
+    {
+      "id": "fp002",
+      "category": "false_positive_control",
+      "difficulty": "easy",
+      "description": "A correct context manager usage for file reading \u00e2\u20ac\u201d proper `with` block, valid mode. (TRUE NEGATIVE)",
+      "buggy_code": "with open('data.txt', 'r') as f:\n    content = f.read()",
+      "expected_guidance": "No changes needed. The file is opened correctly in read mode using a context manager that ensures it is closed after use.",
+      "ground_truth_fix": "with open('data.txt', 'r') as f:\n    content = f.read()",
+      "is_correct_code": true,
+      "trust_metadata": {
+        "llm_confidence": 0.9,
+        "rule_validation": true,
+        "execution_trace_match": 0.88
+      },
+      "trust_score": 0.926,
+      "simulated_latency_ms": 188
+    },
+    {
+      "id": "fp003",
+      "category": "false_positive_control",
+      "difficulty": "medium",
+      "description": "A correct use of `enumerate` to iterate with index and value \u00e2\u20ac\u201d idiomatic and bug-free. (TRUE NEGATIVE)",
+      "buggy_code": "fruits = ['apple', 'banana', 'cherry']\nfor i, fruit in enumerate(fruits):\n    print(i, fruit)",
+      "expected_guidance": "No changes needed. Using `enumerate` is the idiomatic way to iterate with an index in Python.",
+      "ground_truth_fix": "fruits = ['apple', 'banana', 'cherry']\nfor i, fruit in enumerate(fruits):\n    print(i, fruit)",
+      "is_correct_code": true,
+      "trust_metadata": {
+        "llm_confidence": 0.85,
+        "rule_validation": true,
+        "execution_trace_match": 0.83
+      },
+      "trust_score": 0.891,
+      "simulated_latency_ms": 260
+    },
+    {
+      "id": "fp004",
+      "category": "false_positive_control",
+      "difficulty": "medium",
+      "description": "A correct recursive Fibonacci with memoisation via `functools.lru_cache` \u00e2\u20ac\u201d no logical errors. (TRUE NEGATIVE)",
+      "buggy_code": "from functools import lru_cache\n@lru_cache(maxsize=None)\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n-1) + fib(n-2)",
+      "expected_guidance": "No changes needed. The function is correctly memoised with `lru_cache`, and the base case handles both 0 and 1.",
+      "ground_truth_fix": "from functools import lru_cache\n@lru_cache(maxsize=None)\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n-1) + fib(n-2)",
+      "is_correct_code": true,
+      "trust_metadata": {
+        "llm_confidence": 0.87,
+        "rule_validation": true,
+        "execution_trace_match": 0.86
+      },
+      "trust_score": 0.907,
+      "simulated_latency_ms": 275
+    },
+    {
+      "id": "fp005",
+      "category": "false_positive_control",
+      "difficulty": "medium",
+      "description": "A correct `dataclass` definition \u00e2\u20ac\u201d all fields typed, default factory used properly. The LLM's low confidence causes a false flag. (FALSE POSITIVE)",
+      "buggy_code": "from dataclasses import dataclass, field\n@dataclass\nclass Point:\n    x: float\n    y: float\n    tags: list = field(default_factory=list)",
+      "expected_guidance": "No changes needed. The `dataclass` definition is correct. Using `field(default_factory=list)` is the proper way to avoid mutable default arguments.",
+      "ground_truth_fix": "from dataclasses import dataclass, field\n@dataclass\nclass Point:\n    x: float\n    y: float\n    tags: list = field(default_factory=list)",
+      "is_correct_code": true,
+      "trust_metadata": {
+        "llm_confidence": 0.5,
+        "rule_validation": false,
+        "execution_trace_match": 0.5
+      },
+      "trust_score": 0.35,
+      "simulated_latency_ms": 1045
+    }
+  ]
+}
