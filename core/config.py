@@ -5,7 +5,7 @@ Modules should import settings from here instead of os.getenv().
 
 import os
 from dataclasses import dataclass, field
-
+from typing import Optional
 from dotenv import load_dotenv
 
 # Load .env file at module import time
@@ -52,6 +52,13 @@ class Settings:
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
+
+    # Alert Suppression Configuration
+    ALERT_COOLDOWN_INFO: int = 60      # seconds
+    ALERT_COOLDOWN_WARNING: int = 30   # seconds
+
+    # Privacy Configuration
+    PRIVACY_MASKING_ENABLED: bool = True
 
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
@@ -108,6 +115,12 @@ class Settings:
             self.TRUST_SCORE_W2 = float(env_val)
         if env_val := os.getenv("TRUST_SCORE_W3"):
             self.TRUST_SCORE_W3 = float(env_val)
+
+        # Alert Suppression Configuration
+        if env_val := os.getenv("ALERT_COOLDOWN_INFO"):
+            self.ALERT_COOLDOWN_INFO = int(env_val)
+        if env_val := os.getenv("ALERT_COOLDOWN_WARNING"):
+            self.ALERT_COOLDOWN_WARNING = int(env_val)
 
         # Privacy Configuration
         if env_val := os.getenv("PRIVACY_MASKING_ENABLED"):
