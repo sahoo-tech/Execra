@@ -4,6 +4,7 @@ Modules should import settings from here instead of os.getenv().
 """
 
 import os
+from typing import Optional
 from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
