@@ -15,3 +15,5 @@ plyer
 python-dotenv
 numpy
 pydantic
+scikit-learn
+joblib

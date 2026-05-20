@@ -54,19 +54,15 @@ class Settings:
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
 
-    # WebSocket Security
-    # WS_API_TOKEN: set to a non-empty secret in production; empty string disables
-    # auth with a warning log (dev-only convenience).
-    WS_API_TOKEN: str = ""
-    # Maximum number of concurrent WebSocket guidance connections.
-    WS_MAX_CONNECTIONS: int = 10
-    # Sliding-window rate limit: at most WS_RATE_LIMIT_MESSAGES messages
-    # per WS_RATE_LIMIT_WINDOW_S seconds per connection.
-    WS_RATE_LIMIT_MESSAGES: int = 30
-    WS_RATE_LIMIT_WINDOW_S: int = 60
-    # Seconds between server-initiated pings sent to each connection.
-    # Set to 0 to disable the heartbeat entirely.
-    WS_HEARTBEAT_INTERVAL_S: int = 30
+    # Trace Anomaly Detection (Isolation Forest)
+    # Expected fraction of anomalous traces in training data.
+    ANOMALY_CONTAMINATION: float = 0.1
+    # Number of trees in the Isolation Forest ensemble.
+    ANOMALY_N_ESTIMATORS: int = 100
+    # Random seed — controls both model training and synthetic baseline generation.
+    ANOMALY_RANDOM_STATE: int = 42
+    # Path where the fitted model is persisted with joblib.
+    ANOMALY_MODEL_PATH: str = "data/trace_anomaly_model.joblib"
 
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
@@ -124,17 +120,15 @@ class Settings:
         if env_val := os.getenv("TRUST_SCORE_W3"):
             self.TRUST_SCORE_W3 = float(env_val)
 
-        # WebSocket Security
-        if env_val := os.getenv("WS_API_TOKEN"):
-            self.WS_API_TOKEN = env_val
-        if env_val := os.getenv("WS_MAX_CONNECTIONS"):
-            self.WS_MAX_CONNECTIONS = int(env_val)
-        if env_val := os.getenv("WS_RATE_LIMIT_MESSAGES"):
-            self.WS_RATE_LIMIT_MESSAGES = int(env_val)
-        if env_val := os.getenv("WS_RATE_LIMIT_WINDOW_S"):
-            self.WS_RATE_LIMIT_WINDOW_S = int(env_val)
-        if env_val := os.getenv("WS_HEARTBEAT_INTERVAL_S"):
-            self.WS_HEARTBEAT_INTERVAL_S = int(env_val)
+        # Trace Anomaly Detection
+        if env_val := os.getenv("ANOMALY_CONTAMINATION"):
+            self.ANOMALY_CONTAMINATION = float(env_val)
+        if env_val := os.getenv("ANOMALY_N_ESTIMATORS"):
+            self.ANOMALY_N_ESTIMATORS = int(env_val)
+        if env_val := os.getenv("ANOMALY_RANDOM_STATE"):
+            self.ANOMALY_RANDOM_STATE = int(env_val)
+        if env_val := os.getenv("ANOMALY_MODEL_PATH"):
+            self.ANOMALY_MODEL_PATH = env_val
 
         # Privacy Configuration
         if env_val := os.getenv("PRIVACY_MASKING_ENABLED"):
