@@ -4,30 +4,28 @@ Modules should import settings from here instead of os.getenv().
 """
 
 import os
+from typing import Optional
 from dataclasses import dataclass, field
+from typing import Optional
 
 from dotenv import load_dotenv
+from core.utils.env_validator import assert_env
 
-# Load .env file at module import time
+# Load .env file
 load_dotenv()
 
+# Validate environment at startup
+assert_env()
 
-def parse_cors_origins(raw_origins: str) -> list[str]:
-    """
-    Parse comma-separated CORS origins from an environment variable.
-    Empty entries are ignored so trailing commas do not create invalid origins.
-    """
+
+def parse_cors_origins(raw_origins: str) -> List[str]:
     return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
 
 
 @dataclass
 class Settings:
-    """
-    Typed settings for Execra with defaults and environment variable overrides.
-    """
-
     # LLM Configuration
-    LLM_BACKEND: str = "gpt-4o"
+    LLM_BACKEND: str = "openai"
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
 
@@ -43,10 +41,12 @@ class Settings:
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     LOG_LEVEL: str = "INFO"
-    CORS_ORIGINS: list[str] = field(
+    CORS_ORIGINS: List[str] = field(
         default_factory=lambda: [
             "http://localhost:3000",
             "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
             "http://localhost:8000",
             "http://127.0.0.1:8000",
         ]
@@ -56,53 +56,61 @@ class Settings:
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
 
+    # Trace Anomaly Detection (Isolation Forest)
+    # Expected fraction of anomalous traces in training data.
+    ANOMALY_CONTAMINATION: float = 0.1
+    # Number of trees in the Isolation Forest ensemble.
+    ANOMALY_N_ESTIMATORS: int = 100
+    # Random seed — controls both model training and synthetic baseline generation.
+    ANOMALY_RANDOM_STATE: int = 42
+    # Path where the fitted model is persisted with joblib.
+    ANOMALY_MODEL_PATH: str = "data/trace_anomaly_model.joblib"
+
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
-    MASKED_REGIONS: list = field(
-        default_factory=list
-    )  # List of [x1, y1, x2, y2]
-    SENSITIVE_PATTERNS: list = field(
+    MASKED_REGIONS: List = field(default_factory=list)
+    SENSITIVE_PATTERNS: List = field(
         default_factory=lambda: [
-            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",  # Emails
-            r"\b\d{4}-\d{4}-\d{4}-\d{4}\b",  # Credit Cards
-            r"\b\d{3}-\d{2}-\d{4}\b",  # SSN
-            r"(?i)api_key[:=]\s*[A-Za-z0-9_\-]+",  # Generic API Keys
+            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+            r"\b\d{4}-\d{4}-\d{4}-\d{4}\b",
+            r"\b\d{3}-\d{2}-\d{4}\b",
+            r"(?i)api_key[:=]\s*[A-Za-z0-9_\-]+",
         ]
     )
 
     def __post_init__(self):
         """Load environment variables and override defaults."""
         # LLM Configuration
-        if env_val := os.getenv("LLM_BACKEND"):
-            self.LLM_BACKEND = env_val
-        if env_val := os.getenv("OPENAI_API_KEY"):
-            self.OPENAI_API_KEY = env_val
-        if env_val := os.getenv("GEMINI_API_KEY"):
-            self.GEMINI_API_KEY = env_val
+        if val := os.getenv("LLM_BACKEND"):
+            self.LLM_BACKEND = val
+        if val := os.getenv("OPENAI_API_KEY"):
+            self.OPENAI_API_KEY = val
+        if val := os.getenv("GEMINI_API_KEY"):
+            self.GEMINI_API_KEY = val
 
         # Security
-        if env_val := os.getenv("ENCRYPTION_KEY"):
-            self.ENCRYPTION_KEY = env_val
+        if val := os.getenv("ENCRYPTION_KEY"):
+            self.ENCRYPTION_KEY = val
 
         # Screen Capture & Detection
-        if env_val := os.getenv("SCREEN_CAPTURE_FPS"):
-            self.SCREEN_CAPTURE_FPS = int(env_val)
-        if env_val := os.getenv("DETECTION_THRESHOLD"):
-            self.DETECTION_THRESHOLD = float(env_val)
-        if env_val := os.getenv("DELTA_THRESHOLD"):
-            self.DELTA_THRESHOLD = float(env_val)
+        if val := os.getenv("SCREEN_CAPTURE_FPS"):
+            self.SCREEN_CAPTURE_FPS = int(val)
+        if val := os.getenv("DETECTION_THRESHOLD"):
+            self.DETECTION_THRESHOLD = float(val)
+        if val := os.getenv("DELTA_THRESHOLD"):
+            self.DELTA_THRESHOLD = float(val)
 
         # API Configuration
-        if env_val := os.getenv("API_HOST"):
-            self.API_HOST = env_val
-        if env_val := os.getenv("API_PORT"):
-            self.API_PORT = int(env_val)
-        if env_val := os.getenv("LOG_LEVEL"):
-            self.LOG_LEVEL = env_val
-        if env_val := os.getenv("CORS_ORIGINS"):
-            self.CORS_ORIGINS = parse_cors_origins(env_val)
+        if val := os.getenv("API_HOST"):
+            self.API_HOST = val
+        if val := os.getenv("API_PORT"):
+            self.API_PORT = int(val)
+        if val := os.getenv("LOG_LEVEL"):
+            self.LOG_LEVEL = val
+        if val := os.getenv("CORS_ORIGINS"):
+            self.CORS_ORIGINS = parse_cors_origins(val)
 
-        # Redis Configuration
+        # Redis
         if val := os.getenv("REDIS_URL"):
             self.REDIS_URL = val
         if val := os.getenv("REDIS_PASSWORD"):
@@ -115,6 +123,16 @@ class Settings:
             self.TRUST_SCORE_W2 = float(env_val)
         if env_val := os.getenv("TRUST_SCORE_W3"):
             self.TRUST_SCORE_W3 = float(env_val)
+
+        # Trace Anomaly Detection
+        if env_val := os.getenv("ANOMALY_CONTAMINATION"):
+            self.ANOMALY_CONTAMINATION = float(env_val)
+        if env_val := os.getenv("ANOMALY_N_ESTIMATORS"):
+            self.ANOMALY_N_ESTIMATORS = int(env_val)
+        if env_val := os.getenv("ANOMALY_RANDOM_STATE"):
+            self.ANOMALY_RANDOM_STATE = int(env_val)
+        if env_val := os.getenv("ANOMALY_MODEL_PATH"):
+            self.ANOMALY_MODEL_PATH = env_val
 
         # Privacy Configuration
         if env_val := os.getenv("PRIVACY_MASKING_ENABLED"):
