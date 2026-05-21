@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timezone
 from typing import Callable
-
+from core.hybrid.alert_suppressor import alert_suppressor
 from plyer import notification
 
 from core.models import GuidanceInstruction
@@ -30,8 +30,12 @@ class GuidanceDispatcher:
         if channel not in self._channels:
             self._channels.append(channel)
 
-    def dispatch(self, instruction: GuidanceInstruction) -> None:
+    def dispatch(self, instruction: GuidanceInstruction, severity: str = "info") -> None:
         """Routes the instruction to all registered output channels."""
+        # Check if instruction should be suppressed
+        if alert_suppressor.should_suppress(instruction, severity):
+            return  
+
         logger.info(
             f"Dispatching instruction (Step {instruction.step}/{instruction.total_steps}): "
             f"{instruction.instruction} [Confidence: {instruction.confidence:.2f}]"

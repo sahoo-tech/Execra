@@ -1,0 +1,10 @@
+{
+  "screen_text": "os.remove('/')",
+  "trace_summary": "Dangerous filesystem operation detected",
+  "expected_guidance_keywords": [
+    "filesystem",
+    "dangerous",
+    "delete"
+  ],
+  "expected_trust_level": "low"
+}

@@ -1,0 +1,10 @@
+{
+  "screen_text": "x = 10 / 0",
+  "trace_summary": "Division by zero detected",
+  "expected_guidance_keywords": [
+    "division",
+    "zero",
+    "error"
+  ],
+  "expected_trust_level": "trusted"
+}

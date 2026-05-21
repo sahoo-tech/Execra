@@ -1,0 +1,10 @@
+{
+  "screen_text": "open('missing.txt')",
+  "trace_summary": "FileNotFoundError raised",
+  "expected_guidance_keywords": [
+    "file",
+    "missing",
+    "path"
+  ],
+  "expected_trust_level": "moderate"
+}

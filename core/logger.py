@@ -59,7 +59,7 @@ def setup(
 
     root.setLevel(level)
 
-    return logger
 
 
-logger = setup_logger()
+setup()
+logger = logging.getLogger("execra")

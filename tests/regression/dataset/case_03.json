@@ -1,0 +1,10 @@
+{
+  "screen_text": "while True: recurse()",
+  "trace_summary": "Deep recursion detected",
+  "expected_guidance_keywords": [
+    "recursion",
+    "stack",
+    "loop"
+  ],
+  "expected_trust_level": "low"
+}

@@ -1,7 +1,7 @@
 from typing import Any, Dict
 from core.errors.exceptions import ExecraError
 from core.errors.error_codes import ErrorCode
-from core.utils.logger import logger
+from core.logger import logger
 
 
 def handle_exception(e: Exception) -> Dict[str, Any]:

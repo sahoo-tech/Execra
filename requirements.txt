@@ -16,5 +16,6 @@ plyer
 python-dotenv
 numpy
 pydantic
+cryptography
 scikit-learn
 joblib

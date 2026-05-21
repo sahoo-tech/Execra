@@ -1,0 +1,10 @@
+{
+  "screen_text": "def add(a b):",
+  "trace_summary": "Function parsing failed",
+  "expected_guidance_keywords": [
+    "comma",
+    "function",
+    "syntax"
+  ],
+  "expected_trust_level": "moderate"
+}
