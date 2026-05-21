@@ -9,4 +9,4 @@ def test_mock_settings(mock_settings):
     Verify that the mock_settings fixture is working.
     """
     assert mock_settings.LLM_BACKEND == "test-model"
-    assert mock_settings.API_PORT == 9999
+    assert mock_settings.API_PORT == 9001

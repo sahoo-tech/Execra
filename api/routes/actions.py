@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from core.hybrid.action_logger import action_logger
+from core.hybrid.action_logger import action_logger, ActionRecord
 
 router = APIRouter()
 
@@ -9,6 +9,14 @@ async def get_actions(limit: int = 20, offset: int = 0):
     return {
         "total": len(actions),
         "actions": actions
+    }
+
+@router.post("/actions")
+async def create_action(action: ActionRecord):
+    await action_logger.log_action(action)
+    return {
+        "message": "Action logged successfully.",
+        "action": action
     }
 
 @router.post("/actions/undo")

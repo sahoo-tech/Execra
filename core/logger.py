@@ -1,27 +1,65 @@
+import json
 import logging
+import traceback
+from logging.handlers import RotatingFileHandler
 from typing import Optional
 
 
-def setup(log_level: str = "INFO") -> None:
+class JSONFormatter(logging.Formatter):
+    """Custom formatter that outputs log records as JSON strings."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        log_data = {
+            "timestamp": self.formatTime(record, self.datefmt),
+            "level": record.levelname,
+            "name": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info:
+            log_data["exception"] = "".join(traceback.format_exception(*record.exc_info))
+        return json.dumps(log_data)
+
+
+def setup(
+    log_level: str = "INFO",
+    log_file: Optional[str] = None,
+    max_bytes: int = 10 * 1024 * 1024,
+    backup_count: int = 5,
+    json_format: bool = False,
+) -> None:
     """Configure root logging for the application.
 
-    This is intentionally small: modules should call `get_logger(name)`.
+    Supports rotating file logs and structured JSON logging.
     """
     level = getattr(logging, log_level.upper(), logging.INFO)
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("[%(asctime)s] %(levelname)s %(name)s: %(message)s")
-    handler.setFormatter(formatter)
-
     root = logging.getLogger()
-    # Avoid adding duplicate handlers when called multiple times
-    if not root.handlers:
-        root.addHandler(handler)
+
+    # Clear existing handlers to prevent duplicates during reconfiguration
+    for h in list(root.handlers):
+        root.removeHandler(h)
+
+    # Configure formatter
+    if json_format:
+        formatter = JSONFormatter()
+    else:
+        formatter = logging.Formatter("[%(asctime)s] %(levelname)s %(name)s: %(message)s")
+
+    # Add Stream Handler
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    root.addHandler(stream_handler)
+
+    # Add Rotating File Handler
+    if log_file:
+        file_handler = RotatingFileHandler(
+            log_file, maxBytes=max_bytes, backupCount=backup_count, encoding="utf-8"
+        )
+        file_handler.setFormatter(formatter)
+        root.addHandler(file_handler)
+
     root.setLevel(level)
 
-    # Make sure common uvicorn loggers follow the same level
-    logging.getLogger("uvicorn.access").setLevel(level)
-    logging.getLogger("uvicorn.error").setLevel(level)
 
 
-def get_logger(name: str) -> logging.Logger:
-    return logging.getLogger(name)
+setup()
+logger = logging.getLogger("execra")

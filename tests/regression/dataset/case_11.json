@@ -1,0 +1,10 @@
+{
+  "screen_text": "while True: pass",
+  "trace_summary": "Infinite loop suspected",
+  "expected_guidance_keywords": [
+    "loop",
+    "termination",
+    "condition"
+  ],
+  "expected_trust_level": "low"
+}

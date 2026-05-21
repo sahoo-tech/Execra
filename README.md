@@ -72,6 +72,12 @@ Traditional Workflow:        Execra Workflow:
 └──────────────────┘         └─────────────────────────────────┘
 ```
 
+### Real-Time Monitoring Dashboard
+
+The SvelteKit dashboard provides a futuristic UI showing real-time telemetry, live action logs, active WebSocket connection status, and guidance feedback:
+
+![Execra Monitoring Dashboard Preview](docs/images/dashboard_preview.png)
+
 ---
 
 ## 🎯 Core Objective
@@ -156,176 +162,247 @@ Traditional Workflow:        Execra Workflow:
 
 ---
 
+
 ## 🏗️ System Architecture
 
 ### High-Level Architecture Diagram
 
+```mermaid
+flowchart TD
+
+A[Input Layer]
+
+A1[Screen Capture]
+A2[Camera Feed]
+A3[User Text Input]
+
+A --> A1
+A --> A2
+A --> A3
+
+B[Processing Layer]
+
+B1[Code Runtime Trace Engine]
+B2[Computer Vision OCR + Detection]
+B3[Context Engine Task Detector]
+
+A1 --> B1
+A2 --> B2
+A3 --> B3
+
+C[Intelligence Layer]
+
+C1[LLM Reasoning]
+C2[Rule-Based Validator]
+C3[Prediction and Simulation]
+
+B1 --> C1
+B2 --> C2
+B3 --> C3
+
+D[Trust and Confidence Scorer]
+
+C1 --> D
+C2 --> D
+C3 --> D
+
+E[Output Layer]
+
+E1[Real-Time Instructions]
+E2[Error Alerts and Warnings]
+E3[Confidence Indicators]
+
+D --> E
+
+E --> E1
+E --> E2
+E --> E3
 ```
-╔══════════════════════════════════════════════════════════════════════════╗
-║                         E X E C R A   SYSTEM                            ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║                                                                          ║
-║   ┌─────────────────────────────────────────────────────────────────┐   ║
-║   │                        INPUT LAYER                              │   ║
-║   │                                                                 │   ║
-║   │   ┌──────────────┐   ┌──────────────┐   ┌──────────────────┐   │   ║
-║   │   │ Screen Capture│   │  Camera Feed │   │  User Text Input │   │   ║
-║   │   │  (Digital AI) │   │ (Physical AI)│   │  (Active Mode)   │   │   ║
-║   │   └──────┬───────┘   └──────┬───────┘   └────────┬─────────┘   │   ║
-║   └──────────┼──────────────────┼────────────────────┼─────────────┘   ║
-║              │                  │                     │                  ║
-║              ▼                  ▼                     ▼                  ║
-║   ┌─────────────────────────────────────────────────────────────────┐   ║
-║   │                      PROCESSING LAYER                           │   ║
-║   │                                                                 │   ║
-║   │ ┌───────────────┐  ┌──────────────────┐  ┌──────────────────┐  │   ║
-║   │ │  Code Runtime  │  │ Computer Vision   │  │  Context Engine  │  │   ║
-║   │ │  Trace Engine  │  │ (OCR + Detection) │  │ (Task Detector)  │  │   ║
-║   │ └───────┬───────┘  └────────┬─────────┘  └────────┬─────────┘  │   ║
-║   └─────────┼───────────────────┼────────────────────┼─────────────┘   ║
-║             │                   │                     │                  ║
-║             ▼                   ▼                     ▼                  ║
-║   ┌─────────────────────────────────────────────────────────────────┐   ║
-║   │                     INTELLIGENCE LAYER                          │   ║
-║   │                                                                 │   ║
-║   │ ┌──────────────┐  ┌──────────────────┐  ┌──────────────────┐   │   ║
-║   │ │     LLM      │  │  Rule-Based       │  │  Prediction       │   │   ║
-║   │ │  (Reasoning) │  │  Validator        │  │  & Simulation     │   │   ║
-║   │ └──────┬───────┘  └────────┬─────────┘  └────────┬─────────┘   │   ║
-║   │        │                   │                      │              │   ║
-║   │        └───────────────────┴──────────────────────┘             │   ║
-║   │                            │                                    │   ║
-║   │              ┌─────────────▼──────────────┐                    │   ║
-║   │              │   TRUST & CONFIDENCE SCORER │                    │   ║
-║   │              │   (Score + Explanation)      │                    │   ║
-║   │              └─────────────────────────────┘                    │   ║
-║   └─────────────────────────────────────────────────────────────────┘   ║
-║                                │                                         ║
-║                                ▼                                         ║
-║   ┌─────────────────────────────────────────────────────────────────┐   ║
-║   │                        OUTPUT LAYER                             │   ║
-║   │                                                                 │   ║
-║   │   ┌────────────┐  ┌──────────────┐  ┌────────────────────────┐ │   ║
-║   │   │  Real-Time │  │ Error Alerts │  │  Confidence Indicators  │ │   ║
-║   │   │ Instruction│  │  & Warnings  │  │  + Reasoning Display   │ │   ║
-║   │   └────────────┘  └──────────────┘  └────────────────────────┘ │   ║
-║   └─────────────────────────────────────────────────────────────────┘   ║
-╚══════════════════════════════════════════════════════════════════════════╝
+### Subsystem Communication Flow
+
+```mermaid
+flowchart TD
+
+A[User Action]
+
+B[Perception Bus<br/>Screen + Camera]
+
+C1[Code Engine<br/>Digital]
+C2[CV Engine<br/>Physical]
+C3[Intent Engine<br/>Context]
+
+D[Intelligence Core<br/>LLM + Rules + Prediction]
+
+E[Trust Scorer<br/>Confidence greater than 80%]
+
+F1[Deliver Instruction<br/>+ Confidence Score]
+F2[Flag Uncertainty<br/>+ Request Clarification]
+
+G[Action Logger<br/>Undo / Replay]
+
+A --> B
+
+B --> C1
+B --> C2
+B --> C3
+
+C1 --> D
+C2 --> D
+C3 --> D
+
+D --> E
+
+E -->|Yes| F1
+E -->|No| F2
+
+F1 --> G
+F2 --> G
+
+G -. Feedback Loop .-> B
 ```
 
 ---
 
-### Subsystem Communication Flow
+### Real-Time WebSocket & API Architecture
 
+Execra implements a decoupled, event-driven observer pattern to broadcast action events to connected clients in real time. The sequence below describes the handshake and notification lifecycle.
+
+```mermaid
+sequenceDiagram
+    participant Frontend as SvelteKit Dashboard
+    participant WS as WebSocket Router
+    participant CM as Connection Manager
+    participant AL as Action Logger (Observer)
+
+    Frontend->>WS: ws://localhost:8000/ws
+    WS->>CM: connect()
+    CM->>CM: Add to active connections (set)
+    CM-->>Frontend: {"event": "handshake", ...}
+    
+    Note over Frontend, AL: Real-time Event Broadcast Flow
+    AL->>CM: notify(action)
+    CM->>Frontend: {"event": "action_logged", "data": {...}}
 ```
-                          USER ACTION
-                              │
-                    ┌─────────▼─────────┐
-                    │   Perception Bus   │◄──────────────────────────┐
-                    │ (Screen + Camera)  │                           │
-                    └─────────┬─────────┘                           │
-                              │                                      │
-              ┌───────────────┼───────────────┐                     │
-              │               │               │                     │
-    ┌─────────▼────┐  ┌───────▼──────┐  ┌────▼──────────┐          │
-    │  Code Engine │  │  CV Engine   │  │ Intent Engine │          │
-    │  (Digital)   │  │  (Physical)  │  │ (Context)     │          │
-    └─────────┬────┘  └───────┬──────┘  └────┬──────────┘          │
-              │               │               │                     │
-              └───────────────▼───────────────┘                     │
-                              │                                      │
-                    ┌─────────▼─────────┐                           │
-                    │  Intelligence Core │                           │
-                    │  (LLM + Rules +   │                           │
-                    │   Prediction)     │                           │
-                    └─────────┬─────────┘                           │
-                              │                                      │
-                    ┌─────────▼─────────┐                           │
-                    │   Trust Scorer    │                           │
-                    │ Confidence > 80%? │                           │
-                    └──┬────────────┬───┘                           │
-                       │            │                               │
-               Yes ────┘            └──── No                       │
-                  │                          │                      │
-     ┌────────────▼──────────┐  ┌────────────▼─────────────┐       │
-     │  Deliver Instruction  │  │  Flag Uncertainty +       │       │
-     │  + Confidence Score   │  │  Request Clarification    │       │
-     └────────────┬──────────┘  └────────────┬─────────────┘       │
-                  │                           │                     │
-                  └─────────────┬─────────────┘                     │
-                                │                                   │
-                      ┌─────────▼─────────┐                        │
-                      │   Action Logger   │────────────────────────┘
-                      │  (Undo / Replay)  │   Feedback loop
-                      └───────────────────┘
+
+#### WebSocket Event Schema
+
+##### 1. Server Handshake Response
+Sent immediately upon client connection:
+```json
+{
+  "event": "handshake",
+  "version": "1.0.0",
+  "message": "Connected to ws://localhost:8000/ws"
+}
 ```
+
+##### 2. Action Logged Broadcast
+Broadcasting payload to all active connections when a physical or digital action is recorded:
+```json
+{
+  "event": "action_logged",
+  "data": {
+    "id": "act_1716200230",
+    "session_id": "sess_9123",
+    "timestamp": "2026-05-20T11:24:35.832Z",
+    "type": "user_click",
+    "description": "Clicked dashboard simulation button",
+    "domain": "digital",
+    "was_guided": true,
+    "guidance_confidence": 0.95
+  }
+}
+```
+
+#### REST API Endpoints
+
+| Method | Endpoint | Description | Payload Schema / Response |
+|--------|----------|-------------|----------------------------|
+| **GET** | `/api/v1/actions` | Retrieve recently recorded execution actions. | `{"actions": [...], "count": 2}` |
+| **POST** | `/api/v1/actions` | Log a new action record and broadcast to WebSocket observers. | `ActionRecord` model |
+| **POST** | `/api/v1/actions/undo` | Revert the last execution action from the log. | `{"message": "Action undone", "action_undone": {...}}` |
 
 ---
 
 ### Dual-Domain Architecture (Digital + Physical)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        EXECRA CORE                              │
-│                                                                 │
-│  ┌─────────────────────────┐   ┌─────────────────────────────┐  │
-│  │   DIGITAL DOMAIN (IDE)  │   │   PHYSICAL DOMAIN (Camera)  │  │
-│  │                         │   │                             │  │
-│  │  📺 Screen Capture      │   │  📷 Live Camera Feed        │  │
-│  │  🔤 Code Parser         │   │  🔍 Object Detection        │  │
-│  │  ⚙️  Runtime Tracer     │   │  📐 Spatial Analysis        │  │
-│  │  🐞 Logic Debugger      │   │  🏷️  OCR (Text in Scene)    │  │
-│  │  📈 Execution Flow Map  │   │  🔄 Action Recognition      │  │
-│  │                         │   │                             │  │
-│  │  Examples:              │   │  Examples:                  │  │
-│  │  • Code debugging       │   │  • Hardware repair          │  │
-│  │  • Form completion      │   │  • Cooking guidance         │  │
-│  │  • Software navigation  │   │  • Physical form filling    │  │
-│  │  • API integration      │   │  • Device assembly          │  │
-│  └────────────┬────────────┘   └──────────────┬──────────────┘  │
-│               │                               │                  │
-│               └───────────────┬───────────────┘                  │
-│                               │                                  │
-│                  ┌────────────▼────────────┐                     │
-│                  │   UNIFIED CONTEXT MODEL  │                     │
-│                  │   • Current Task State   │                     │
-│                  │   • Step Tracker         │                     │
-│                  │   • Error History        │                     │
-│                  │   • User Profile         │                     │
-│                  └─────────────────────────┘                     │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+
+A[EXECRA CORE]
+
+B1[Digital Domain IDE]
+B2[Physical Domain Camera]
+
+A --> B1
+A --> B2
+
+C1[Screen Capture]
+C2[Code Parser]
+C3[Runtime Tracer]
+C4[Logic Debugger]
+C5[Execution Flow Map]
+
+D1[Live Camera Feed]
+D2[Object Detection]
+D3[Spatial Analysis]
+D4[OCR Text in Scene]
+D5[Action Recognition]
+
+B1 --> C1
+B1 --> C2
+B1 --> C3
+B1 --> C4
+B1 --> C5
+
+B2 --> D1
+B2 --> D2
+B2 --> D3
+B2 --> D4
+B2 --> D5
+
+E[Unified Context Model]
+
+C1 --> E
+D1 --> E
+
+F1[Current Task State]
+F2[Step Tracker]
+F3[Error History]
+F4[User Profile]
+
+E --> F1
+E --> F2
+E --> F3
+E --> F4
 ```
 
 ---
 
 ## 🔄 User Workflow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    EXECRA USER JOURNEY                          │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
 
-    ①                         ②                         ③
-┌─────────┐             ┌──────────────┐           ┌───────────────┐
-│  User   │  ────────►  │   Execra     │  ──────►  │  Task Model   │
-│ Starts  │             │  Detects     │           │  Built        │
-│  Task   │             │  Context     │           │  Internally   │
-└─────────┘             └──────────────┘           └───────────────┘
-                                                          │
-    ⑧                         ⑦                          ④
-┌─────────┐             ┌──────────────┐           ┌─────▼─────────┐
-│ Task    │  ◄────────  │  Adapts to   │  ◄──────  │  Step-by-Step │
-│Complete │             │  Progress    │           │  Guidance     │
-│ ✅      │             │  Dynamically │           │  Begins       │
-└─────────┘             └──────────────┘           └───────────────┘
-                                │
-    ⑨                          ⑤                         ⑥
-┌─────────┐             ┌──────────────┐           ┌───────────────┐
-│  User   │  ────────►  │  Execution   │  ──────►  │  Errors       │
-│ can ask │             │  Monitored   │           │  Detected &   │
-│  Text Q │             │  Continuously│           │  Consequences │
-└─────────┘             └──────────────┘           │  Simulated    │
-                                                   └───────────────┘
+A1["① User Starts Task"]
+A2["② Execra Detects Context"]
+A3["③ Task Model Built Internally"]
+A4["④ Step-by-Step Guidance Begins"]
+A5["⑤ Execution Monitored Continuously"]
+A6["⑥ Errors Detected and Consequences Simulated"]
+A7["⑦ Adapts to Progress Dynamically"]
+A8["⑧ Task Complete"]
+A9["⑨ User can ask Text Questions"]
+
+A1 --> A2
+A2 --> A3
+A3 --> A4
+A4 --> A5
+A5 --> A6
+A6 --> A7
+A7 --> A8
+
+A9 --> A5
 ```
 
 ---
@@ -350,26 +427,76 @@ Traditional Workflow:        Execra Workflow:
 
 ### Layer 1 — Consequence Simulation Engine
 
-```
-BEFORE User Presses "Run" / "Submit" / Performs Action:
+```mermaid
+flowchart TD
 
-┌─────────────────────────────────────────────────────┐
-│            CONSEQUENCE SIMULATOR                    │
-│                                                     │
-│  Current State  ──►  Possible Outcomes              │
-│                                                     │
-│  ✅ Outcome A: Code compiles, loop exits at n=10    │
-│  ⚠️  Outcome B: Off-by-one error causes overflow    │
-│  ❌ Outcome C: Infinite loop if condition missing   │
-│                                                     │
-│  Recommendation: Adjust line 14 condition           │
-│  Confidence: 91% │ Source: Runtime Trace + Rules    │
-└─────────────────────────────────────────────────────┘
-```
+A["User presses Run / Submit / Performs Action"]
 
+B["Consequence Simulator"]
+
+C["Current State Analysis"]
+
+D["Possible Outcomes"]
+
+E1["✅ Outcome A<br/>Code compiles successfully"]
+E2["⚠️ Outcome B<br/>Off-by-one error causes overflow"]
+E3["❌ Outcome C<br/>Infinite loop detected"]
+
+F["Recommendation<br/>Adjust line 14 condition"]
+
+G["Confidence: 91%<br/>Source: Runtime Trace + Rules"]
+
+A --> B
+B --> C
+C --> D
+
+D --> E1
+D --> E2
+D --> E3
+
+E1 --> F
+E2 --> F
+E3 --> F
+
+F --> G
+```
 ### Layer 2 — Trust & Confidence Scoring
 
+```mermaid
+flowchart TD
+
+A["Instruction Generated"]
+
+B["Trust Scoring Engine"]
+
+C1["LLM Validation"]
+C2["Rule Engine Validation"]
+C3["Execution Trace Analysis"]
+
+D["Confidence Calculation"]
+
+E["87% Confidence"]
+
+F["Reasoning Generated"]
+
+G["Instruction Delivered<br/>Safe Mode / Expert Mode"]
+
+A --> B
+
+B --> C1
+B --> C2
+B --> C3
+
+C1 --> D
+C2 --> D
+C3 --> D
+
+D --> E
+E --> F
+F --> G
 ```
+
+```text
 Every instruction delivered by Execra includes:
 
 ┌──────────────────────────────────────────────────────┐
@@ -383,27 +510,27 @@ Every instruction delivered by Execra includes:
 └──────────────────────────────────────────────────────┘
 ```
 
+---
+
 ### Layer 3 — Hybrid Interaction System
 
-```
-                    ┌─────────────────────────┐
-                    │  HYBRID INTERACTION      │
-                    └────────────┬────────────┘
-                                 │
-           ┌─────────────────────┼─────────────────────┐
-           │                     │                     │
-  ┌────────▼───────┐  ┌──────────▼────────┐  ┌────────▼──────┐
-  │  PASSIVE MODE  │  │   ACTIVE MODE     │  │  MIXED MODE   │
-  │                │  │                  │  │               │
-  │ Auto-observe   │  │ User asks text   │  │ Both modes    │
-  │ Auto-guide     │  │ questions        │  │ simultaneously│
-  │ No prompts     │  │ Context auto-    │  │               │
-  │ needed         │  │ remembered       │  │               │
-  └────────────────┘  └──────────────────┘  └───────────────┘
+```mermaid
+flowchart TD
+
+A["HYBRID INTERACTION"]
+
+B1["PASSIVE MODE<br/>Auto-observe<br/>Auto-guide<br/>No prompts needed"]
+
+B2["ACTIVE MODE<br/>User asks text questions<br/>Context auto-remembered"]
+
+B3["MIXED MODE<br/>Both modes active simultaneously"]
+
+A --> B1
+A --> B2
+A --> B3
 ```
 
 ---
-
 ## 💻 Tech Stack
 
 <table>
@@ -505,7 +632,7 @@ ffmpeg -version
 ```bash
 # 1. Clone the repository
 git clone https://github.com/sahoo-tech/execra.git
-cd execra
+cd execra/Execra
 
 # 2. Create virtual environment
 python -m venv venv
@@ -515,32 +642,43 @@ venv\Scripts\activate            # Windows
 # 3. Install Python dependencies
 pip install -r requirements.txt
 
-# 4. Install frontend dependencies
-cd frontend
+# 4. Install SvelteKit Dashboard dependencies
+cd dashboard
 npm install
 cd ..
-
-# 5. Set up environment variables
-cp .env.example .env
-# Edit .env and add your API keys (OpenAI / Gemini)
-
-# 6. Download YOLO model weights
-python scripts/download_models.py
-
-# 7. Run Execra
-python main.py
 ```
+
+### Running the Services Locally
+
+#### 1. Start the FastAPI Backend
+From the `Execra` root directory:
+```bash
+# Windows
+venv\Scripts\python.exe main.py
+
+# Linux/Mac
+./venv/bin/python main.py
+```
+The API server will run at `http://localhost:8000`. Swagger documentation is available at `http://localhost:8000/docs`.
+
+#### 2. Start the SvelteKit Dashboard
+From the `Execra/dashboard` directory:
+```bash
+npm run dev
+```
+The dashboard interface will run at `http://localhost:5173`.
 
 ### Quick Start (Docker)
 
 ```bash
-# Build and run with Docker Compose
+# Build and run both backend and frontend with Docker Compose
 docker-compose up --build
 
-# Execra will be running at:
-# API:      http://localhost:8000
-# Frontend: http://localhost:3000
+# Services will be running at:
+# API Backend:      http://localhost:8000
+# Svelte Dashboard: http://localhost:5173
 ```
+
 
 ---
 
@@ -655,20 +793,29 @@ We're thrilled to have you here! Execra is an **open project** built for and by 
 
 ### 🛣️ Contribution Roadmap
 
-```
-                    YOUR CONTRIBUTION JOURNEY
+```mermaid
+flowchart LR
 
-    ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
-    │  FIND   │───►│  FORK   │───►│  CODE   │───►│  PR     │
-    │ an Issue│    │  Repo   │    │  & Test │    │Submitted│
-    └─────────┘    └─────────┘    └─────────┘    └────┬────┘
-                                                       │
-                   ┌───────────────────────────────────┘
-                   │
-    ┌──────────────▼──┐    ┌─────────────┐    ┌──────────────┐
-    │  Review Process  │───►│   Approved  │───►│  MERGED! 🎉  │
-    │  (Maintainer)    │    │             │    │  Points Added│
-    └──────────────────┘    └─────────────┘    └──────────────┘
+A["🔍 FIND<br/>an Issue"]
+
+B["🍴 FORK<br/>Repository"]
+
+C["💻 CODE<br/>& Test"]
+
+D["📤 PR<br/>Submitted"]
+
+E["🛠️ Review Process<br/>(Maintainer)"]
+
+F["✅ Approved"]
+
+G["🎉 MERGED!<br/>Points Added"]
+
+A --> B
+B --> C
+C --> D
+D --> E
+E --> F
+F --> G
 ```
 
 ---

@@ -1,126 +1,266 @@
 # Execra User Guide
 
-## What is Execra?
+Welcome! This guide is written for everyday users — no coding experience required. It will walk you through everything you need to know to install and use Execra confidently.
 
-Execra is an AI assistant that watches your screen or camera feed and helps you complete tasks step by step in real time. 
+---
 
-Instead of searching for tutorials or debugging mistakes later, Execra tries to guide you while you work.
+## Table of Contents
 
-It can help with:
-- Coding tasks
-- Software navigation
-- Form filling 
-- Real world tasks using a webcam
-- Error prevention and guidance
+1. [What is Execra?](#1-what-is-execra)
+2. [System Requirements](#2-system-requirements)
+3. [Installation](#3-installation)
+   - [Windows](#windows-installation)
+   - [Linux](#linux-installation)
+4. [Starting Execra](#4-starting-execra)
+5. [Understanding the Overlay UI](#5-understanding-the-overlay-ui)
+6. [How to Ask Questions in Active Mode](#6-how-to-ask-questions-in-active-mode)
+7. [How to Undo an Action](#7-how-to-undo-an-action)
+8. [Privacy Mode](#8-privacy-mode)
+9. [FAQ](#9-faq)
 
-Execra works in different modes:
-- Passive Mode -> Automatic guidance
-- Active Mode -> Ask questions manually
-- Mixed Mode -> Both together
+---
 
-## System Requirements
+## 1. What is Execra?
 
-Before installing Execra, make sure your system meets these requirements
+Execra is an AI assistant that watches what you are doing on your screen (or through your webcam) and gives you step-by-step guidance in real time — before you make a mistake.
+
+Think of it like having a knowledgeable friend sitting next to you while you work. You do not need to stop and search the internet, watch tutorials, or guess what to do next. Execra watches, understands, and speaks up the moment it sees you heading in the wrong direction.
+
+**What can Execra help with?**
+
+- Writing or debugging code
+- Navigating software you are unfamiliar with
+- Filling out forms correctly
+- Real-world tasks captured through your webcam (cooking, repairs, assembly)
+- Preventing errors before they happen
+
+**How is it different from a chatbot?**
+
+A regular chatbot only responds when you ask it something. Execra runs continuously in the background, observing your actions and offering guidance automatically — no prompting needed.
+
+---
+
+## 2. System Requirements
+
+Before installing Execra, check that your computer meets the following requirements.
 
 ### Windows
-- Windows 10 or newer 
-- Python 3.10 or newer
-- Node.js 18 or newer
-- Webcam (optional but recommended)
-- Internet connection
+
+| Requirement | Minimum |
+|---|---|
+| Operating System | Windows 10 or newer |
+| Python | Version 3.10 or newer |
+| Node.js | Version 18 or newer |
+| RAM | 8 GB recommended |
+| Webcam | Optional (required for physical task guidance) |
+| Internet | Required for AI features |
 
 ### Linux
-- Ubuntu 22.04 or newer
-- Python 3.10 or newer
-- Node.js 18 or newer
-- Webcam (optional but recommended)
-- Internet connection
 
-### Additional Tools
-- FFmpeg installed
+| Requirement | Minimum |
+|---|---|
+| Operating System | Ubuntu 22.04 or newer (or equivalent) |
+| Python | Version 3.10 or newer |
+| Node.js | Version 18 or newer |
+| RAM | 8 GB recommended |
+| Webcam | Optional (required for physical task guidance) |
+| Internet | Required for AI features |
 
-## Windows Installation
+### Additional Tools (Both Platforms)
 
-### Step 1: Install Python
+- **FFmpeg** — used for processing camera video streams
+- **Git** — used to download the Execra source code
+- **An API key** from OpenAI (GPT-4o) or Google (Gemini) — Execra uses one of these AI services to power its intelligence
 
-Download and install python from :[Python](https://www.python.org/downloads/)
+> **Note:** You need at least one AI API key to use Execra. You can get one for free (with usage limits) from [OpenAI](https://platform.openai.com/) or [Google AI Studio](https://aistudio.google.com/).
 
-Make sure "Add Python to PATH" is checked during installation.
+---
 
-### Step 2: Install Node.js
+## 3. Installation
 
-Download and install Node.js from :[Node.js](https://nodejs.org//)
+### Windows Installation
 
-### Step 3: Clone  This Git Repo
+Follow these steps in order. Each step builds on the previous one.
 
-Open command Prompt and run:
+**Step 1 — Install Python**
 
-```bash 
-git clone https://github.com/sahoo-tech/execra.git
-cd Execra
+1. Go to [https://www.python.org/downloads/](https://www.python.org/downloads/)
+2. Download the latest Python 3.10+ installer
+3. Run the installer
+4. **Important:** On the first screen, check the box that says **"Add Python to PATH"** before clicking Install
+
+To confirm Python is installed, open Command Prompt and run:
 ```
-### Step 4: Create Virtual Enviornment
+python --version
+```
+You should see something like `Python 3.11.4`.
 
-```bash
+---
+
+**Step 2 — Install Node.js**
+
+1. Go to [https://nodejs.org/](https://nodejs.org/)
+2. Download the **LTS** (Long Term Support) version
+3. Run the installer with default settings
+
+To confirm Node.js is installed:
+```
+node --version
+```
+
+---
+
+**Step 3 — Install FFmpeg**
+
+1. Go to [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+2. Download a Windows build (e.g., from gyan.dev)
+3. Extract the zip file and add the `bin` folder to your system PATH
+
+> **Tip:** Search "how to add FFmpeg to PATH on Windows" if you are unsure how to do this step.
+
+---
+
+**Step 4 — Install Git**
+
+1. Go to [https://git-scm.com/download/win](https://git-scm.com/download/win)
+2. Download and run the installer with default settings
+
+---
+
+**Step 5 — Download Execra**
+
+Open **Command Prompt** and run:
+
+```
+git clone https://github.com/sahoo-tech/execra.git
+cd execra
+```
+
+---
+
+**Step 6 — Create a Virtual Environment**
+
+A virtual environment keeps Execra's dependencies separate from the rest of your computer.
+
+```
 python -m venv .venv
 .venv\Scripts\activate
 ```
 
-### Step 5: Install Dependencies
+> You will see `(.venv)` appear at the start of your command line. This means the virtual environment is active.
 
-```bash
+---
+
+**Step 7 — Install Python Dependencies**
+
+```
 pip install -r requirements.txt
 ```
 
-### Step 6: Install Frontend Package
+This may take a few minutes.
 
-```bash
+---
+
+**Step 8 — Install Frontend Dependencies**
+
+```
 cd frontend
 npm install
 cd ..
 ```
 
-### Step 7: Configure Enviornment Variable
+---
 
-```bash
+**Step 9 — Set Up Your Configuration File**
+
+```
 copy .env.example .env
 ```
 
-### Step 8: Download AI Models
+Now open the `.env` file in any text editor (like Notepad) and fill in your API key:
 
-```bash
+```
+LLM_BACKEND=gpt-4o
+OPENAI_API_KEY=your-actual-openai-key-here
+```
+
+Or if you are using Google Gemini:
+
+```
+LLM_BACKEND=gemini
+GEMINI_API_KEY=your-actual-gemini-key-here
+```
+
+Save and close the file.
+
+---
+
+**Step 10 — Download AI Model Files**
+
+```
 python scripts/download_models.py
 ```
 
-### Step 9: Start Execra
+---
+
+**Step 11 — Start Execra**
+
+```
+python main.py
+```
+
+Execra is now running. The overlay UI will appear on your screen.
+
+---
+
+### Linux Installation
+
+**Step 1 — Install System Dependencies**
+
+Open a terminal and run:
 
 ```bash
-    python main.py
+sudo apt update
+sudo apt install python3 python3-pip python3-venv nodejs npm ffmpeg git -y
 ```
-## Linux Installation
 
-### Step 1: Clone  This Git Repo
+To confirm versions:
+```bash
+python3 --version
+node --version
+```
 
-Open command Prompt and run:
+---
 
-```bash 
+**Step 2 — Download Execra**
+
+```bash
 git clone https://github.com/sahoo-tech/execra.git
-cd Execra
+cd execra
 ```
-### Step 2: Create Virtual Enviornment
+
+---
+
+**Step 3 — Create a Virtual Environment**
 
 ```bash
 python3 -m venv .venv
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
-### Step 3: Install Dependencies
+> You will see `(.venv)` at the start of your terminal prompt when the environment is active.
+
+---
+
+**Step 4 — Install Python Dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4: Install Frontend Package
+---
+
+**Step 5 — Install Frontend Dependencies**
 
 ```bash
 cd frontend
@@ -128,98 +268,257 @@ npm install
 cd ..
 ```
 
-### Step 5: Configure Environment Variable
+---
+
+**Step 6 — Set Up Your Configuration File**
 
 ```bash
 cp .env.example .env
+nano .env
 ```
 
-### Step 6: Download AI Models
+Fill in your API key (use arrow keys to navigate, `Ctrl+O` to save, `Ctrl+X` to exit):
+
+```
+OPENAI_API_KEY=your-actual-openai-key-here
+```
+
+---
+
+**Step 7 — Download AI Model Files**
 
 ```bash
 python scripts/download_models.py
 ```
 
-### Step 7: Start Execra
+---
+
+**Step 8 — Start Execra**
 
 ```bash
-    python main.py
+python main.py
 ```
-## Starting Execra
 
-After launching Execra:
+---
 
-1. Choose a working domain:
-    - Digital Domain -> Coding and software tasks
-    - Physical Domain -> Camera based real-world tasks
+## 4. Starting Execra
 
-2. Select a mode :
-    - Passive Mode -> Automatic guidance
-    - Active Mode -> Ask questions manually
-    - Mixed Mode -> Both together
+When you run `python main.py`, Execra starts up and you will be prompted to make two choices.
 
-3. Allow screen  or  camera permissions if prompted.
+### Choose a Domain
 
+A "domain" tells Execra what kind of task you are working on.
 
-## Understanding the overlay UI
+| Domain | What it does | Use it when... |
+|---|---|---|
+| **Digital** | Watches your screen | You are coding, using software, or filling out forms on your computer |
+| **Physical** | Uses your webcam | You are doing a real-world task like cooking, repairing something, or assembling a device |
 
-### Main Overlay Panel
+### Choose a Mode
 
-> Screenshot placeholder
+A "mode" controls how Execra interacts with you.
 
-The overlay panel displays:
-- Current task guidance
-- Warnings and alerts
-- suggested next steps
-- Confidence score
+| Mode | How it works |
+|---|---|
+| **Passive Mode** | Execra watches silently and shows guidance automatically. You do not need to ask anything. |
+| **Active Mode** | Execra waits for you to type a question. It uses your current screen or camera context to answer. |
+| **Mixed Mode** | Both at the same time — Execra guides you automatically AND accepts your questions. |
+
+> **Recommended for beginners:** Start with **Mixed Mode** in the **Digital Domain** so you get automatic guidance and can also ask questions when confused.
+
+### Grant Permissions
+
+If prompted, allow Execra to:
+- Access your screen (for Digital domain)
+- Access your webcam (for Physical domain)
+
+These permissions are required for Execra to observe your work and provide guidance.
+
+---
+
+## 5. Understanding the Overlay UI
+
+Once Execra is running, a small panel appears on your screen. Here is what each part means.
+
+---
+
+### Main Guidance Panel
+
+> 📸 _Screenshot placeholder — Main overlay panel showing a guidance message_
+
+This is the main area where Execra displays its suggestions. It shows:
+- What you should do next
+- Warnings if it detects a potential mistake
+- A brief explanation of why it is making the suggestion
+
+---
 
 ### Confidence Indicator
 
-> Screenshot placeholder
+> 📸 _Screenshot placeholder — Confidence bar showing 87%_
 
-This shows how confident Execra is about it's suggestion.
+The confidence bar (shown as a percentage) tells you how certain Execra is about its suggestion.
+
+| Confidence Level | What it means |
+|---|---|
+| 80% – 100% | Execra is very confident. Follow the suggestion. |
+| 50% – 79% | Execra has a reasonable suggestion but recommends double-checking. |
+| Below 50% | Execra is uncertain. Use your own judgment. |
+
+---
 
 ### Mode Indicator
 
-> Screenshot placeholder
+> 📸 _Screenshot placeholder — Mode badge showing "Passive Mode"_
 
-Shows whether Execra is running in:
-- Passive Mode
-- Active Mode
-- Mixed Mode
+A small badge in the corner shows which mode is currently active:
+- **Passive** — Execra is guiding you automatically
+- **Active** — Execra is waiting for your questions
+- **Mixed** — Both are active
 
+You can switch modes at any time from the overlay controls.
 
-## Using Active Mode
+---
 
-In Active Mode, you can ask questions directly while working.
+### Warning / Alert Banner
 
-Example questions:
-- "Why is this code failing?"
-- "what should i do next?"
-- "how do i fix this error?"
+> 📸 _Screenshot placeholder — Red warning banner saying "Potential error detected"_
 
-Execra remembers your current context, so you do not need to repeat everything.
+When Execra detects that you are about to make a mistake, a colored banner appears:
+- **Yellow** — Caution, something looks unusual
+- **Red** — High risk of error, stop and review before continuing
 
-## Undoing an Action
+---
 
-Execra keeps tracks of recent actions using it's action logging system.
+### Action History Button
 
-if an undo feature is available in your current workflow, use the undo option provided in the overlay or application controls.
+> 📸 _Screenshot placeholder — History icon in the overlay_
 
-## Privacy Mode 
+Clicking this shows a list of recent actions Execra has logged. You can use this to review what happened or trigger an undo.
 
-Privacy Mode helps limit sensitive information exposure while using Execra.
+---
 
-when enabled:
-- Certain screen or camera information may be hidden or restricted
-- sensitive tasks can be performed more safely
+## 6. How to Ask Questions in Active Mode
 
-Check the application settings to enable Privacy Mode.
+In Active Mode (or Mixed Mode), you can type questions directly to Execra. It already knows what is on your screen or camera, so you do not need to explain the context.
 
-## FAQ
+**How to ask a question:**
+
+1. Click the text input box in the overlay panel
+2. Type your question in plain language
+3. Press **Enter**
+
+**Example questions you can ask:**
+
+- `Why is my code not working?`
+- `What should I do next?`
+- `Is this the right way to do this?`
+- `Explain what just happened`
+- `What does this error mean?`
+
+> **Tip:** You do not need to copy-paste your code or describe your screen. Execra already sees it. Just ask your question naturally.
+
+Execra will respond in the overlay panel with a plain-language answer and a confidence score.
+
+---
+
+## 7. How to Undo an Action
+
+Execra keeps a log of up to 50 recent actions during your session. If something went wrong, you can undo the last action.
+
+**To undo:**
+
+1. Look for the **Undo** button in the overlay panel (or press the keyboard shortcut shown in the UI)
+2. Click it once to reverse the most recent logged action
+3. You can click it multiple times to step back through recent actions
+
+> **Important:** Undo works for actions that Execra has logged and can reverse. Not all actions (for example, saving a file externally) can be undone through Execra. When an action cannot be undone, Execra will tell you.
+
+> **Note:** The undo stack is cleared when you close Execra or start a new session.
+
+---
+
+## 8. Privacy Mode
+
+Privacy Mode protects sensitive information while Execra is running. When enabled, Execra automatically hides or blurs certain content before it is processed.
+
+**What Privacy Mode does:**
+
+- Automatically detects and redacts sensitive text such as email addresses, credit card numbers, and API keys
+- Blacks out or blurs screen regions you have marked as private
+- Prevents sensitive data from being included in AI requests
+
+**How to enable Privacy Mode:**
+
+1. Open the `.env` file in your Execra folder
+2. Find the line:
+   ```
+   PRIVACY_MASKING_ENABLED=true
+   ```
+   Make sure it is set to `true` (it is enabled by default)
+3. Save the file and restart Execra
+
+**To mark specific screen regions as private:**
+
+In your `.env` file, you can define rectangular areas of your screen to always be blacked out. This is useful if you have a password manager or sensitive panel visible while working.
+
+> **Tip:** Even with Privacy Mode enabled, avoid working with highly sensitive data (like banking credentials) while Execra is running, as a general best practice.
+
+---
+
+## 9. FAQ
 
 ### Is my screen data sent to the cloud?
 
-Execra may use AI services depending on your configuration and selected models.
+**It depends on your configuration.**
 
-Review the '.env' configuration and project settings to understand which external services are enabled before using sensitive data.
+Execra uses an AI service (OpenAI GPT-4o or Google Gemini) to understand what is on your screen and generate guidance. When Execra processes a screen capture or camera frame, a description or excerpt of that content is sent to the AI service you have configured in your `.env` file.
+
+Here is what that means in practice:
+
+| Scenario | What gets sent to the cloud |
+|---|---|
+| You are using OpenAI GPT-4o | Processed screen/camera data is sent to OpenAI's servers |
+| You are using Google Gemini | Processed screen/camera data is sent to Google's servers |
+| Privacy Mode is ON | Sensitive patterns (emails, keys, etc.) are redacted **before** being sent |
+| Privacy Mode is OFF | Raw extracted text may be included in the AI request |
+
+**To minimize data exposure:**
+1. Keep `PRIVACY_MASKING_ENABLED=true` in your `.env` file
+2. Review the privacy policies of your chosen AI provider
+3. Avoid using Execra while sensitive documents (passwords, financial data) are visible on screen
+
+---
+
+### Do I need an internet connection?
+
+Yes, for the AI guidance features. Execra sends context to an external AI service (OpenAI or Gemini) to generate its suggestions. A stable internet connection is required.
+
+---
+
+### Can I use Execra without a webcam?
+
+Yes. The webcam is only needed for the **Physical Domain** (real-world task guidance). If you are only using Execra for screen-based tasks (coding, software, forms), no webcam is needed.
+
+---
+
+### Execra is not starting. What should I check?
+
+1. Make sure your virtual environment is activated (you should see `(.venv)` in your terminal)
+2. Confirm your `.env` file exists and contains a valid API key
+3. Make sure all dependencies installed without errors (`pip install -r requirements.txt`)
+4. Check that Python 3.10+ is being used (`python --version`)
+
+---
+
+### How do I stop Execra?
+
+Press `Ctrl+C` in the terminal where Execra is running, or close the terminal window.
+
+---
+
+### Where can I get help?
+
+- Open a bug report: [GitHub Issues](https://github.com/sahoo-tech/execra/issues/new?template=bug_report.md)
+- Start a discussion: [GitHub Discussions](https://github.com/sahoo-tech/execra/discussions)
+- Email the maintainer: ss9830872697@gmail.com

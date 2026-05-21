@@ -1,0 +1,10 @@
+{
+  "screen_text": "mylist[100]",
+  "trace_summary": "IndexError during list access",
+  "expected_guidance_keywords": [
+    "index",
+    "bounds",
+    "list"
+  ],
+  "expected_trust_level": "moderate"
+}

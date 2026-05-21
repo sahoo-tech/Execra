@@ -1,10 +1,14 @@
 from collections import deque
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Optional, Literal, Dict, Any
 from pydantic import BaseModel
 import aiosqlite
 import os
+import uuid
+from core.security.crypto import encrypt,decrypt
+import logging
 
+logger = logging.getLogger(__name__)
 
 class ActionRecord(BaseModel):
     id: str
@@ -26,6 +30,17 @@ class ActionLogger:
 
         self.db_path = db_path
         self._stack = deque(maxlen=50)
+        self.on_log_callbacks = []
+
+    def register_callback(self, cb) -> None:
+        """Register a callback to be executed when an action is logged."""
+        if cb not in self.on_log_callbacks:
+            self.on_log_callbacks.append(cb)
+
+    def unregister_callback(self, cb) -> None:
+        """Unregister a callback."""
+        if cb in self.on_log_callbacks:
+            self.on_log_callbacks.remove(cb)
 
     async def _init_db(self):
         """Create the action_log table if it doesn't exist."""
@@ -45,7 +60,7 @@ class ActionLogger:
             await db.commit()
 
     async def log_action(self, action: ActionRecord) -> None:
-        """Save action to SQLite and append to in-memory undo stack."""
+        """Save action to SQLite, append to stack, and trigger callbacks."""
         await self._init_db()  # ensure table exists
 
         # Add to in-memory deque
@@ -66,6 +81,17 @@ class ActionLogger:
                 action.guidance_confidence
             ))
             await db.commit()
+
+        # Trigger callbacks
+        for cb in list(self.on_log_callbacks):
+            try:
+                import inspect
+                if inspect.iscoroutinefunction(cb):
+                    await cb(action)
+                else:
+                    cb(action)
+            except Exception as e:
+                logger.error(f"Error in action log callback: {e}")
     
     def undo_last(self) -> Optional[ActionRecord]:
         """Pop and return the last action from the undo stack. Returns None if empty."""
@@ -110,5 +136,51 @@ class ActionLogger:
             await db.commit()
 
         self._stack.clear()
+
+    async def log_error(self, session_id: str, step: int, error: str) -> None:
+        """Encrypt and save an error to the error_history table."""
+        encrypted_error = encrypt(error)
+        error_id = str(uuid.uuid4())
+
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS error_history (
+                    id TEXT PRIMARY KEY,
+                    session_id TEXT,
+                    step INTEGER,
+                    error TEXT
+                )
+            """)
+            await db.execute("""
+                INSERT INTO error_history (id, session_id, step, error)
+                VALUES (?, ?, ?, ?)
+            """, (error_id, session_id, step, encrypted_error))
+            await db.commit()
+
+    async def get_errors(self, session_id: str) -> list[Dict[str, Any]]:
+        """Fetch and decrypt all errors for a session."""
+        errors = []
+        async with aiosqlite.connect(self.db_path) as db:
+            # Check if the table exists yet
+            async with db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='error_history'"
+            ) as cursor:
+                if not await cursor.fetchone():
+                    return []
+
+            async with db.execute(
+                "SELECT id, session_id, step, error FROM error_history WHERE session_id = ? ORDER BY step",
+                (session_id,)
+            ) as cursor:
+                async for row in cursor:
+                    encrypted_error = row[3]
+                    decrypted_error = decrypt(encrypted_error) if encrypted_error else ""
+                    errors.append({
+                        "id": row[0],
+                        "session_id": row[1],
+                        "step": row[2],
+                        "error": decrypted_error
+                    })
+        return errors
 
 action_logger = ActionLogger()

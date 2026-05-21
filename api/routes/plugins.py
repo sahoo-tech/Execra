@@ -6,7 +6,7 @@ plugin_loader = PluginLoader()
 plugin_loader.load_all()
 
 
-@router.get("/api/v1/plugins")
+@router.get("/plugins")
 def get_plugins():
     plugins = plugin_loader.plugins
     return [

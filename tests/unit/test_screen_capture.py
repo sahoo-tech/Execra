@@ -1,126 +1,148 @@
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import numpy as np
 import pytest
 
-from core.perception.screen_capture import ScreenCapture
+from core.perception.screen_capture import (
+    SHMEM_NAME,
+    AdaptiveFPSController,
+    ScreenCapture,
+    compute_delta_pct,
+)
 
 
-def test_screen_capture_initialization():
-    """
-    Test ScreenCapture initialization.
-    """
-
-    capture = ScreenCapture(fps=30)
-
-    assert capture.fps == 30
-    assert capture.thread is None
+def test_initialization():
+    capture = ScreenCapture(fps=2)
+    assert capture.fps == 2
+    assert capture._process is None
+    assert capture._reader_thread is None
     assert not capture._stop_event.is_set()
+    assert not capture._stop_mp_event.is_set()
 
 
 def test_invalid_fps():
-    """
-    Test invalid FPS values.
-    """
-
     with pytest.raises(ValueError):
         ScreenCapture(fps=0)
-
     with pytest.raises(ValueError):
         ScreenCapture(fps=-5)
 
 
-@patch("core.perception.screen_capture.mss.mss")
-def test_start_capture_loop(mock_mss):
-    """
-    Test starting the capture loop thread and queuing frames.
-    """
-
-    async def run_test():
-
-        mock_sct = MagicMock()
-
-        mock_sct.monitors = [None, {}]
-
-        fake_frame = np.zeros(
-            (1, 1, 4),
-            dtype=np.uint8,
-        )
-
-        fake_frame[0, 0] = [10, 20, 30, 255]
-
-        mock_sct.grab.return_value = fake_frame
-
-        mock_mss.return_value.__enter__.return_value = mock_sct
-
-        capture = ScreenCapture(fps=10)
-
-        queue = asyncio.Queue(maxsize=2)
-
-        capture.start_capture_loop(queue)
-
-        try:
-            await asyncio.sleep(0.3)
-
-            assert capture.thread is not None
-            assert capture.thread.is_alive()
-
-            assert not queue.empty()
-
-            frame = await queue.get()
-
-            assert isinstance(frame, np.ndarray)
-
-            assert frame.shape == (1, 1, 3)
-
-            # Verify BGRA to RGB
-            assert frame[0, 0].tolist() == [30, 20, 10]
-
-        finally:
-            capture.stop()
-
-        assert not capture.thread.is_alive()
-
-    asyncio.run(run_test())
+def test_adaptive_fps_controller_low_delta():
+    controller = AdaptiveFPSController(window_size=3, default_fps=2)
+    for _ in range(5):
+        controller.update(0.5)
+    assert controller.update(0.5) == 1
 
 
-@patch("core.perception.screen_capture.mss.mss")
-def test_stop_capture(mock_mss):
-    """
-    Test stopping the capture loop cleanly.
-    """
+def test_adaptive_fps_controller_medium_delta():
+    controller = AdaptiveFPSController(window_size=3, default_fps=2)
+    for _ in range(5):
+        controller.update(5.0)
+    assert controller.update(5.0) == 2
 
-    async def run_test():
 
-        mock_sct = MagicMock()
+def test_adaptive_fps_controller_high_delta():
+    controller = AdaptiveFPSController(window_size=3, default_fps=2)
+    for _ in range(5):
+        controller.update(50.0)
+    assert controller.update(50.0) == 5
 
-        mock_sct.monitors = [None, {}]
 
-        fake_frame = np.zeros(
-            (50, 50, 4),
-            dtype=np.uint8,
-        )
+def test_adaptive_fps_controller_mixed():
+    controller = AdaptiveFPSController(window_size=3, default_fps=4)
+    controller.update(0.5)
+    controller.update(0.5)
+    controller.update(0.5)
+    assert controller.update(0.5) == 1
+    controller.reset()
+    controller.update(15.0)
+    controller.update(15.0)
+    controller.update(15.0)
+    assert controller.update(15.0) == 5
 
-        mock_sct.grab.return_value = fake_frame
 
-        mock_mss.return_value.__enter__.return_value = mock_sct
+def test_adaptive_fps_controller_empty():
+    controller = AdaptiveFPSController(default_fps=3)
+    assert controller.update(0.0) == 1
 
-        capture = ScreenCapture(fps=10)
 
-        queue = asyncio.Queue(maxsize=2)
+def test_compute_delta_pct_no_prev():
+    curr = np.zeros((10, 10, 3), dtype=np.uint8)
+    assert compute_delta_pct(None, curr) == 0.0
 
-        capture.start_capture_loop(queue)
 
-        try:
-            await asyncio.sleep(0.1)
+def test_compute_delta_pct_identical():
+    frame = np.random.randint(0, 256, (10, 10, 3), dtype=np.uint8)
+    assert compute_delta_pct(frame, frame.copy()) == 0.0
 
-        finally:
-            capture.stop()
 
-        assert capture._stop_event.is_set()
+def test_compute_delta_pct_max_diff():
+    prev = np.zeros((10, 10, 3), dtype=np.uint8)
+    curr = np.full((10, 10, 3), 255, dtype=np.uint8)
+    assert compute_delta_pct(prev, curr) == 100.0
 
-        assert capture.thread is not None
-        assert not capture.thread.is_alive()
 
-    asyncio.run(run_test())
+def test_compute_delta_pct_shape_mismatch():
+    prev = np.zeros((10, 10, 3), dtype=np.uint8)
+    curr = np.zeros((20, 20, 3), dtype=np.uint8)
+    assert compute_delta_pct(prev, curr) == 0.0
+
+
+@patch("core.perception.screen_capture.shared_memory.SharedMemory")
+@patch("core.perception.screen_capture.Process")
+async def test_start_capture_loop(mock_process, mock_shm):
+    mock_shm_instance = MagicMock()
+    mock_buf = bytearray(1024 * 1024)
+    type(mock_shm_instance).buf = PropertyMock(return_value=mock_buf)
+    mock_shm.return_value = mock_shm_instance
+
+    mock_process_instance = MagicMock()
+    mock_process.return_value = mock_process_instance
+
+    capture = ScreenCapture(fps=2)
+    queue = asyncio.Queue(maxsize=2)
+
+    capture.start_capture_loop(queue)
+
+    mock_process.assert_called_once()
+    _, kwargs = mock_process.call_args
+    assert kwargs["target"].__name__ == "_capture_process"
+    assert kwargs["args"][0] == SHMEM_NAME
+    assert kwargs["args"][2] == 2
+    assert kwargs["daemon"] is True
+    mock_process_instance.start.assert_called_once()
+
+    assert capture._reader_thread is not None
+    assert capture._reader_thread.is_alive()
+    assert capture._process is not None
+
+    capture.stop()
+
+
+@patch("core.perception.screen_capture.shared_memory.SharedMemory")
+@patch("core.perception.screen_capture.Process")
+async def test_stop_capture(mock_process, mock_shm):
+    mock_shm_instance = MagicMock()
+    mock_buf = bytearray(1024 * 1024)
+    type(mock_shm_instance).buf = PropertyMock(return_value=mock_buf)
+    mock_shm.return_value = mock_shm_instance
+
+    mock_process_instance = MagicMock()
+    mock_process_instance.is_alive.return_value = True
+    mock_process.return_value = mock_process_instance
+
+    capture = ScreenCapture(fps=2)
+    queue = asyncio.Queue(maxsize=2)
+    capture.start_capture_loop(queue)
+
+    mock_process_instance.reset_mock()
+    mock_shm_instance.reset_mock()
+
+    capture.stop()
+
+    assert capture._stop_event.is_set()
+    assert capture._stop_mp_event.is_set()
+    mock_process_instance.join.assert_called_once_with(timeout=3)
+    assert mock_shm_instance.close.called
+    assert mock_shm_instance.unlink.called
