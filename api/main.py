@@ -10,6 +10,8 @@ from api.websockets import guidance as ws_guidance
 from core.config import settings
 from core.errors import handle_exception  # ✅ NEW
 
+from api.routes import suppression
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Execra API", version="0.1.0", description="Execra backend API")
@@ -75,3 +77,6 @@ app.include_router(context.router, prefix="/api/v1")
 
 # WebSocket endpoints (no prefix — WS routes use the path as-is)
 app.include_router(ws_guidance.router)
+
+# Alert suppression endpoints 
+app.include_router(suppression.router, prefix="/api/v1")
