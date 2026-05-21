@@ -1,9 +1,11 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-patch("core.utils.retry.retry", lambda *args, **kwargs: lambda f: f).start()
-
+# Temporarily mock the retry decorator during import to avoid real delays/retries
+_retry_patcher = patch("core.utils.retry.retry", lambda *args, **kwargs: lambda f: f)
+_retry_patcher.start()
 from core.intelligence.llm_client import GeminiClient
+_retry_patcher.stop()
 
 @pytest.fixture
 def valid_api_key():

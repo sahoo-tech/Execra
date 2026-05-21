@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Execra – API Playground</title>
+
+  <!-- highlight.js for coloring the JSON response -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <style>
+    /* Basic reset and font */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f5f7;
+      color: #333;
+    }
+
+    /* Top navbar */
+    .navbar {
+      background: #1e1e2e;
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .navbar h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .navbar h1 span {
+      color: #f59e0b;
+    }
+
+    /* WebSocket status badge in navbar */
+    .ws-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      background: #2a2a3e;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      border: 1px solid #3a3a4e;
+    }
+
+    .ws-badge:hover {
+      border-color: #f59e0b;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #555;
+    }
+
+    .dot.connected {
+      background: #4ade80;
+      box-shadow: 0 0 6px #4ade80;
+    }
+
+    .dot.error {
+      background: #f87171;
+    }
+
+    /* Main container: two columns */
+    .container {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 20px;
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Card style used everywhere */
+    .card {
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e2e4e9;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: #f8f9fb;
+      border-bottom: 1px solid #e2e4e9;
+      padding: 12px 16px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Labels above inputs */
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #555;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    /* All text inputs and textareas */
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-family: 'Courier New', monospace;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fafafa;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #f59e0b;
+      background: white;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 140px;
+      line-height: 1.6;
+    }
+
+    /* Method + URL side by side */
+    .url-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .method-tag {
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: monospace;
+      min-width: 62px;
+      text-align: center;
+    }
+
+    .GET    { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+    .POST   { background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe; }
+    .PUT    { background: #fef9c3; color: #ca8a04; border: 1px solid #fef08a; }
+    .DELETE { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+    .PATCH  { background: #f3e8ff; color: #7c3aed; border: 1px solid #e9d5ff; }
+
+    /* Endpoint selector dropdown */
+    select {
+      font-family: 'Segoe UI', sans-serif;
+      cursor: pointer;
+    }
+
+    /* Tab buttons for Body / Headers */
+    .tab-row {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid #eee;
+      margin: 0 -16px;
+      padding: 0 16px;
+    }
+
+    .tab {
+      padding: 8px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      transition: all 0.15s;
+    }
+
+    .tab:hover { color: #333; }
+    .tab.active { color: #f59e0b; border-bottom-color: #f59e0b; }
+
+    .tab-content { display: none; padding-top: 14px; }
+    .tab-content.active { display: flex; flex-direction: column; gap: 10px; }
+
+    /* Header key-value rows */
+    .header-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .header-row input { font-size: 0.8rem; }
+
+    .remove-btn {
+      width: 30px;
+      height: 30px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #aaa;
+      font-size: 1rem;
+      transition: all 0.15s;
+    }
+
+    .remove-btn:hover { color: #ef4444; border-color: #ef4444; }
+
+    .add-header-btn {
+      background: none;
+      border: 1px dashed #ddd;
+      border-radius: 6px;
+      padding: 7px;
+      font-size: 0.78rem;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: left;
+    }
+
+    .add-header-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+
+    /* Send + Clear buttons */
+    .action-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .send-btn {
+      flex: 1;
+      padding: 11px;
+      background: #f59e0b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .send-btn:hover { background: #d97706; }
+    .send-btn:disabled { background: #fcd34d; cursor: not-allowed; }
+
+    .clear-btn {
+      padding: 11px 16px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #888;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .clear-btn:hover { border-color: #aaa; color: #333; }
+
+    /* Response status bar */
+    .res-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #e2e4e9;
+      min-height: 42px;
+    }
+
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .ok   { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+    .warn { background: #fef9c3; color: #ca8a04; border: 1px solid #fef08a; }
+    .err  { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+
+    .res-time {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: #aaa;
+    }
+
+    .copy-btn {
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #888;
+      transition: all 0.15s;
+    }
+
+    .copy-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+
+    /* Response code area */
+    .res-code {
+      overflow: auto;
+      min-height: 200px;
+      background: #0d1117;
+    }
+
+    .res-code pre {
+      padding: 16px 20px;
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.65;
+    }
+
+    .res-code .hljs { background: transparent; }
+
+    /* Empty state */
+    .empty-box {
+      padding: 60px 20px;
+      text-align: center;
+      color: #bbb;
+    }
+
+    .empty-box p { font-size: 0.85rem; margin-top: 8px; }
+
+    /* WebSocket panel */
+    .ws-panel {
+      margin-top: 20px;
+    }
+
+    .ws-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 16px;
+      background: #f8f9fb;
+      border-bottom: 1px solid #e2e4e9;
+      flex-wrap: wrap;
+    }
+
+    .ws-controls input {
+      flex: 1;
+      min-width: 160px;
+      font-size: 0.8rem;
+    }
+
+    .ws-connect-btn {
+      padding: 7px 14px;
+      background: #1e1e2e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .ws-connect-btn:hover { background: #2a2a3e; }
+
+    .ws-clear-btn {
+      padding: 7px 12px;
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: #888;
+      cursor: pointer;
+    }
+
+    .ws-clear-btn:hover { border-color: #aaa; color: #333; }
+
+    /* Log messages */
+    .ws-log {
+      min-height: 120px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: #fafafa;
+    }
+
+    .log-entry {
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 3px solid transparent;
+    }
+
+    .log-in   { background: #f0fdf4; border-color: #4ade80; color: #166534; }
+    .log-out  { background: #eff6ff; border-color: #60a5fa; color: #1d4ed8; }
+    .log-sys  { background: #f8f9fb; border-color: #ccc;    color: #888; font-style: italic; }
+    .log-err  { background: #fef2f2; border-color: #f87171; color: #b91c1c; }
+
+    .log-entry .ts { opacity: 0.5; margin-right: 8px; }
+
+    /* Send message row */
+    .ws-send-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      border-top: 1px solid #e2e4e9;
+      background: #f8f9fb;
+    }
+
+    .ws-send-row input {
+      flex: 1;
+      font-size: 0.8rem;
+    }
+
+    .ws-send-btn {
+      padding: 8px 14px;
+      background: #1e1e2e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .ws-send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    @media (max-width: 860px) {
+      .container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <h1>Execra <span>/</span> API Playground</h1>
+    <div class="ws-badge" onclick="toggleWs()">
+      <span class="dot" id="wsDot"></span>
+      <span id="wsStatusText">WebSocket: Disconnected</span>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div class="container">
+
+    <!-- LEFT: Request Builder -->
+    <div>
+      <div class="card">
+        <div class="card-header">⚙ Request Builder</div>
+        <div class="card-body">
+
+          <!-- Step 1: Pick an endpoint -->
+          <div>
+            <label>Select Endpoint</label>
+            <select id="endpointSelect" onchange="onEndpointChange()">
+              <optgroup label="Health">
+                <option value="GET /health">GET  /health</option>
+              </optgroup>
+              <optgroup label="Auth">
+                <option value="POST /auth/register">POST  /auth/register</option>
+                <option value="POST /auth/login">POST  /auth/login</option>
+                <option value="POST /auth/logout">POST  /auth/logout</option>
+                <option value="GET /auth/me">GET  /auth/me</option>
+              </optgroup>
+              <optgroup label="Users">
+                <option value="GET /users">GET  /users</option>
+                <option value="GET /users/:id">GET  /users/:id</option>
+                <option value="PUT /users/:id">PUT  /users/:id</option>
+                <option value="DELETE /users/:id">DELETE  /users/:id</option>
+              </optgroup>
+              <optgroup label="Tasks">
+                <option value="GET /tasks">GET  /tasks</option>
+                <option value="POST /tasks">POST  /tasks</option>
+                <option value="GET /tasks/:id">GET  /tasks/:id</option>
+                <option value="PUT /tasks/:id">PUT  /tasks/:id</option>
+                <option value="DELETE /tasks/:id">DELETE  /tasks/:id</option>
+                <option value="POST /tasks/:id/execute">POST  /tasks/:id/execute</option>
+              </optgroup>
+              <optgroup label="Logs">
+                <option value="GET /logs">GET  /logs</option>
+                <option value="GET /logs/:id">GET  /logs/:id</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Step 2: URL preview -->
+          <div>
+            <label>Full URL</label>
+            <div class="url-row">
+              <span class="method-tag GET" id="methodTag">GET</span>
+              <input type="text" id="urlInput" value="http://localhost:3000/health" />
+            </div>
+          </div>
+
+          <!-- Step 3: Tabs for Body and Headers -->
+          <div>
+            <div class="tab-row">
+              <button class="tab active" onclick="switchTab('body', this)">Body</button>
+              <button class="tab" onclick="switchTab('headers', this)">Headers</button>
+            </div>
+
+            <!-- Body tab -->
+            <div id="tab-body" class="tab-content active">
+              <textarea id="bodyInput" placeholder="// No body for GET requests" disabled></textarea>
+            </div>
+
+            <!-- Headers tab -->
+            <div id="tab-headers" class="tab-content">
+              <div id="headerList"></div>
+              <button class="add-header-btn" onclick="addHeader()">+ Add Header</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Send -->
+          <div class="action-row">
+            <button class="send-btn" id="sendBtn" onclick="sendRequest()">▶ Send Request</button>
+            <button class="clear-btn" onclick="clearResponse()">Clear</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Response + WebSocket -->
+    <div>
+
+      <!-- Response card -->
+      <div class="card">
+        <div class="card-header">📨 Response</div>
+        <div class="res-bar" id="resBar">
+          <span style="font-size:0.8rem; color:#bbb">Hit Send to see the response here</span>
+        </div>
+        <div class="res-code" id="resCode">
+          <div class="empty-box">
+            <div style="font-size:2rem">🛰️</div>
+            <p>No response yet. Select an endpoint and click Send.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- WebSocket card -->
+      <div class="card ws-panel">
+        <div class="card-header">⚡ WebSocket Live Log</div>
+        <div class="ws-controls">
+          <input type="url" id="wsUrlInput" value="ws://localhost:3000/ws" placeholder="ws://localhost:3000/ws" />
+          <button class="ws-connect-btn" id="wsConnectBtn" onclick="toggleWs()">Connect</button>
+          <button class="ws-clear-btn" onclick="clearLog()">Clear Log</button>
+        </div>
+        <div class="ws-log" id="wsLog">
+          <div class="log-entry log-sys">
+            <span class="ts">--:--:--</span>
+            WebSocket log will appear here once connected.
+          </div>
+        </div>
+        <div class="ws-send-row">
+          <input type="text" id="wsMsgInput" placeholder='Send a message e.g. {"type":"ping"}' disabled onkeydown="if(event.key==='Enter') sendWsMsg()" />
+          <button class="ws-send-btn" id="wsSendBtn" onclick="sendWsMsg()" disabled>Send</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Endpoint body templates ──────────────────────────────────────────
+    // Each endpoint has a preset body so users don't have to guess what to type
+    const TEMPLATES = {
+      "GET /health":            null,
+      "POST /auth/register":    { username: "alice", email: "alice@example.com", password: "secret123" },
+      "POST /auth/login":       { email: "alice@example.com", password: "secret123" },
+      "POST /auth/logout":      null,
+      "GET /auth/me":           null,
+      "GET /users":             null,
+      "GET /users/:id":         null,
+      "PUT /users/:id":         { username: "alice_updated", email: "alice@example.com" },
+      "DELETE /users/:id":      null,
+      "GET /tasks":             null,
+      "POST /tasks":            { title: "My Task", description: "Run this script", schedule: "*/5 * * * *" },
+      "GET /tasks/:id":         null,
+      "PUT /tasks/:id":         { title: "Updated Task", description: "Updated description" },
+      "DELETE /tasks/:id":      null,
+      "POST /tasks/:id/execute":{ args: [] },
+      "GET /logs":              null,
+      "GET /logs/:id":          null,
+    };
+
+    // ── When user picks a different endpoint ─────────────────────────────
+    function onEndpointChange() {
+      const selected = document.getElementById('endpointSelect').value;
+      const [method, path] = selected.split(' ');
+
+      // Update the method badge colour
+      const tag = document.getElementById('methodTag');
+      tag.textContent = method;
+      tag.className = 'method-tag ' + method;
+
+      // Update the URL input
+      document.getElementById('urlInput').value = 'http://localhost:3000' + path;
+
+      // Fill in the body or disable it for GET requests
+      const bodyEl = document.getElementById('bodyInput');
+      const template = TEMPLATES[selected];
+      if (template) {
+        bodyEl.value = JSON.stringify(template, null, 2);
+        bodyEl.disabled = false;
+      } else {
+        bodyEl.value = '';
+        bodyEl.disabled = true;
+        bodyEl.placeholder = `// No body needed for ${method} requests`;
+      }
+    }
+
+    // ── Switch between Body and Headers tabs ─────────────────────────────
+    function switchTab(name, clickedBtn) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      // Remove active from all tab buttons
+      document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+      // Show selected tab
+      document.getElementById('tab-' + name).classList.add('active');
+      clickedBtn.classList.add('active');
+    }
+
+    // ── Add a new header row ──────────────────────────────────────────────
+    function addHeader(key = '', value = '') {
+      const list = document.getElementById('headerList');
+      const row = document.createElement('div');
+      row.className = 'header-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Header name" value="${key}" />
+        <input type="text" placeholder="Value" value="${value}" />
+        <button class="remove-btn" onclick="this.parentElement.remove()">×</button>
+      `;
+      list.appendChild(row);
+    }
+
+    // ── Collect all headers from the header tab ───────────────────────────
+    function getHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      document.querySelectorAll('#headerList .header-row').forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const key = inputs[0].value.trim();
+        const val = inputs[1].value.trim();
+        if (key) headers[key] = val;
+      });
+      return headers;
+    }
+
+    // ── Actually send the API request ─────────────────────────────────────
+    async function sendRequest() {
+      const url = document.getElementById('urlInput').value.trim();
+      const selected = document.getElementById('endpointSelect').value;
+      const method = selected.split(' ')[0];
+      const bodyText = document.getElementById('bodyInput').value.trim();
+
+      // Disable button while waiting
+      const btn = document.getElementById('sendBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      const startTime = performance.now();
+
+      try {
+        // Build fetch options
+        const options = { method, headers: getHeaders() };
+        if (bodyText && method !== 'GET') {
+          options.body = bodyText;
+        }
+
+        // Make the request
+        const response = await fetch(url, options);
+        const ms = Math.round(performance.now() - startTime);
+        const rawText = await response.text();
+
+        // Try to pretty-print as JSON
+        let prettyText = rawText;
+        try {
+          prettyText = JSON.stringify(JSON.parse(rawText), null, 2);
+        } catch (_) {
+          // Not JSON, show as plain text
+        }
+
+        showResponse(response.status, response.statusText, ms, prettyText);
+
+      } catch (error) {
+        const ms = Math.round(performance.now() - startTime);
+        // Show network error nicely
+        showResponse('ERR', 'Network Error', ms,
+          JSON.stringify({ error: error.message, tip: 'Make sure your Execra server is running on localhost:3000' }, null, 2)
+        );
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '▶ Send Request';
+      }
+    }
+
+    // ── Display the response on screen ───────────────────────────────────
+    function showResponse(status, statusText, ms, body) {
+      // Pick colour for status badge
+      const code = parseInt(status);
+      let badgeClass = 'err';
+      if (code >= 200 && code < 300) badgeClass = 'ok';
+      else if (code >= 300 && code < 400) badgeClass = 'warn';
+
+      // Update the status bar
+      document.getElementById('resBar').innerHTML = `
+        <span class="status-badge ${badgeClass}">${status} ${statusText}</span>
+        <span style="font-size:0.78rem; color:#aaa">JSON</span>
+        <span class="res-time">⏱ ${ms}ms</span>
+        <button class="copy-btn" onclick="copyResponse()">Copy</button>
+      `;
+
+      // Syntax highlight the body
+      const pre = document.createElement('pre');
+      const code_el = document.createElement('code');
+      code_el.className = 'language-json';
+      code_el.textContent = body;
+      pre.appendChild(code_el);
+      hljs.highlightElement(code_el);
+
+      const resCode = document.getElementById('resCode');
+      resCode.innerHTML = '';
+      resCode.appendChild(pre);
+    }
+
+    // ── Clear the response area ───────────────────────────────────────────
+    function clearResponse() {
+      document.getElementById('resBar').innerHTML =
+        '<span style="font-size:0.8rem; color:#bbb">Hit Send to see the response here</span>';
+      document.getElementById('resCode').innerHTML = `
+        <div class="empty-box">
+          <div style="font-size:2rem">🛰️</div>
+          <p>No response yet. Select an endpoint and click Send.</p>
+        </div>`;
+    }
+
+    // ── Copy response text ────────────────────────────────────────────────
+    function copyResponse() {
+      const text = document.getElementById('resCode').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 1500);
+      });
+    }
+
+    // ── WebSocket logic ───────────────────────────────────────────────────
+    let socket = null;
+
+    function toggleWs() {
+      // If already connected, disconnect
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+        return;
+      }
+
+      const url = document.getElementById('wsUrlInput').value.trim();
+      addLog('sys', `Connecting to ${url}...`);
+      setWsStatus('connecting');
+
+      try {
+        socket = new WebSocket(url);
+
+        // Connection opened
+        socket.onopen = () => {
+          setWsStatus('connected');
+          addLog('sys', '✅ Connected!');
+          document.getElementById('wsMsgInput').disabled = false;
+          document.getElementById('wsSendBtn').disabled = false;
+          document.getElementById('wsConnectBtn').textContent = 'Disconnect';
+        };
+
+        // Message received from server
+        socket.onmessage = (event) => {
+          let msg = event.data;
+          try { msg = JSON.stringify(JSON.parse(msg), null, 2); } catch (_) {}
+          addLog('in', msg);
+        };
+
+        // Connection error
+        socket.onerror = () => {
+          setWsStatus('error');
+          addLog('err', '❌ Connection failed');
+        };
+
+        // Connection closed
+        socket.onclose = (event) => {
+          setWsStatus('disconnected');
+          addLog('sys', `🔌 Disconnected (code: ${event.code})`);
+          document.getElementById('wsMsgInput').disabled = true;
+          document.getElementById('wsSendBtn').disabled = true;
+          document.getElementById('wsConnectBtn').textContent = 'Connect';
+          socket = null;
+        };
+
+      } catch (err) {
+        setWsStatus('error');
+        addLog('err', err.message);
+      }
+    }
+
+    // ── Send a WebSocket message ──────────────────────────────────────────
+    function sendWsMsg() {
+      const input = document.getElementById('wsMsgInput');
+      const msg = input.value.trim();
+      if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
+      socket.send(msg);
+      addLog('out', msg);
+      input.value = '';
+    }
+
+    // ── Add a line to the WebSocket log ──────────────────────────────────
+    function addLog(type, message) {
+      const log = document.getElementById('wsLog');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+
+      const dir = type === 'in' ? '↓ IN' : type === 'out' ? '↑ OUT' : type === 'err' ? '✕ ERR' : '● SYS';
+      entry.innerHTML = `<span class="ts">${time}</span> <strong>${dir}</strong>  ${escapeHtml(message)}`;
+
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight; // auto scroll to bottom
+    }
+
+    // ── Clear WebSocket log ───────────────────────────────────────────────
+    function clearLog() {
+      document.getElementById('wsLog').innerHTML = `
+        <div class="log-entry log-sys">
+          <span class="ts">--:--:--</span> Log cleared.
+        </div>`;
+    }
+
+    // ── Update WebSocket dot and text ─────────────────────────────────────
+    function setWsStatus(state) {
+      const dot = document.getElementById('wsDot');
+      const text = document.getElementById('wsStatusText');
+      dot.className = 'dot';
+      if (state === 'connected') {
+        dot.classList.add('connected');
+        text.textContent = 'WebSocket: Connected';
+      } else if (state === 'error') {
+        dot.classList.add('error');
+        text.textContent = 'WebSocket: Error';
+      } else if (state === 'connecting') {
+        text.textContent = 'WebSocket: Connecting...';
+      } else {
+        text.textContent = 'WebSocket: Disconnected';
+      }
+    }
+
+    // ── Prevent XSS in log messages ───────────────────────────────────────
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // ── Run on page load ──────────────────────────────────────────────────
+    window.onload = function () {
+      // Add a default auth header so users can see how it works
+      addHeader('Authorization', 'Bearer your_token_here');
+      // Trigger once so URL and body are set correctly from the start
+      onEndpointChange();
+    };
+  </script>
+
+</body>
+</html>

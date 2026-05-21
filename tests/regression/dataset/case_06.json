@@ -1,0 +1,10 @@
+{
+  "screen_text": "if x == 5 print(x)",
+  "trace_summary": "Conditional statement malformed",
+  "expected_guidance_keywords": [
+    "colon",
+    "if",
+    "syntax"
+  ],
+  "expected_trust_level": "moderate"
+}

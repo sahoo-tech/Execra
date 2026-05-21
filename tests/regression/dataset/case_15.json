@@ -1,0 +1,10 @@
+{
+  "screen_text": "def func():\nprint('bad indent')",
+  "trace_summary": "IndentationError detected",
+  "expected_guidance_keywords": [
+    "indentation",
+    "spacing",
+    "block"
+  ],
+  "expected_trust_level": "moderate"
+}

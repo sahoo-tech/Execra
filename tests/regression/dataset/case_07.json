@@ -1,0 +1,10 @@
+{
+  "screen_text": "import panda",
+  "trace_summary": "Module import failed",
+  "expected_guidance_keywords": [
+    "module",
+    "import",
+    "pandas"
+  ],
+  "expected_trust_level": "trusted"
+}

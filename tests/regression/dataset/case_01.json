@@ -1,0 +1,10 @@
+{
+  "screen_text": "print('hello'",
+  "trace_summary": "Syntax error detected",
+  "expected_guidance_keywords": [
+    "syntax",
+    "parenthesis",
+    "fix"
+  ],
+  "expected_trust_level": "moderate"
+}

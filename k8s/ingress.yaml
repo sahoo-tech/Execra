@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: execra-ingress
+  namespace: execra
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    # Enable WebSocket support for /ws/ paths
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+spec:
+  tls:
+    - hosts:
+        - execra.example.com       # Replace with your domain
+      secretName: execra-tls-cert   # Must be created separately (cert-manager or manual)
+  rules:
+    - host: execra.example.com     # Replace with your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: execra-api
+                port:
+                  number: 8000

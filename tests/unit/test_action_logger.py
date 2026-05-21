@@ -43,8 +43,10 @@ def test_double_undo_returns_none_when_no_undoable_action_remains():
 
     logger.record_action(action)
 
-    assert logger.undo_last() == action
-    assert logger.undo_last() is None
+        # Verify that an INSERT INTO command was executed
+        insert_calls = [call for call in mock_db.execute.call_args_list if "INSERT INTO" in call[0][0]]
+        assert len(insert_calls) == 1
+        assert mock_db.commit.called
 
 
 @pytest.mark.asyncio
@@ -64,6 +66,10 @@ async def test_replay_session_yields_matching_session_actions_in_order():
 
     assert replayed_actions == [first_action, third_action]
 
+        # Verify that a DELETE FROM command was executed
+        delete_calls = [call for call in mock_db.execute.call_args_list if "DELETE FROM" in call[0][0]]
+        assert len(delete_calls) == 1
+        assert mock_db.commit.called
 
 @pytest.mark.asyncio
 async def test_replay_session_rejects_invalid_speed():

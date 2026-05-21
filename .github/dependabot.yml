@@ -1,0 +1,47 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    target-branch: main
+    labels:
+      - dependabot
+    groups:
+      pip-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: npm
+    directory: /frontend/overlay
+    schedule:
+      interval: weekly
+    target-branch: main
+    labels:
+      - dependabot
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    target-branch: main
+    labels:
+      - dependabot
+    groups:
+      actions-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch

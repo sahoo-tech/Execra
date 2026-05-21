@@ -4,6 +4,8 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from core.hybrid.action_logger import ActionRecord, action_logger
+from fastapi import APIRouter, HTTPException
+from core.hybrid.action_logger import action_logger, ActionRecord
 
 router = APIRouter()
 
@@ -32,6 +34,17 @@ def get_actions(limit: int = Query(20, ge=1), offset: int = Query(0, ge=0)):
         "actions": [action.to_dict() for action in actions],
     }
 
+@router.post("/actions")
+async def create_action(action: ActionRecord):
+    await action_logger.log_action(action)
+    return {
+        "message": "Action logged successfully.",
+        "action": action
+    }
+
+@router.post("/actions/undo")
+async def undo_last_action():
+    undone = action_logger.undo_last()
 
 @router.post("/actions")
 def create_action(payload: ActionCreate):
