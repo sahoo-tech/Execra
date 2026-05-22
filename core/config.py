@@ -52,6 +52,10 @@ class Settings:
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
+    # Trust Score Weights
+    TRUST_SCORE_W1: float = 0.5
+    TRUST_SCORE_W2: float = 0.3
+    TRUST_SCORE_W3: float = 0.2
 
     # Privacy Configuration
     PRIVACY_MASKING_ENABLED: bool = True
