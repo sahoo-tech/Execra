@@ -19,3 +19,5 @@ pydantic
 cryptography
 scikit-learn
 joblib
+pytest
+jinja2

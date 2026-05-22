@@ -11,6 +11,7 @@ from google.genai import types
 
 from core.config import settings
 from core.utils.retry import retry
+from core.intelligence.prompt_engine import PromptEngine
 
 class BaseLLMClient(ABC):
     """BaseLLMClient is an abstract class for other LLMClients."""
@@ -227,17 +228,15 @@ class LLMClientFactory:
 class PromptBuilder:
     '''PromptBuilder help guide the user build context aware prompt for LLM for better output'''
 
-    @staticmethod
-    def build_guidance_prompt(context, screen_text, trace_summary) -> str:
-        return f"""
-        You are an intelligent UI guidance assistant.
+    _prompt_engine = PromptEngine()
 
-        Context:
-        {context}
-        Visible Screen Text:
-        {screen_text}
-        Previous Interaction Trace:
-        {trace_summary}
-
-        Provide the next best action.
-        """.strip()
+    @classmethod
+    def build_guidance_prompt(cls, context: str, screen_text: str, trace_summary: str) -> str:
+        return cls._prompt_engine.render(
+            "guidance_request.j2",
+            {
+                "context": context,
+                "screen_text": screen_text,
+                "trace_summary": trace_summary,
+            }
+        )

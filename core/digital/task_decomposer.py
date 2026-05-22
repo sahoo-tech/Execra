@@ -3,10 +3,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from core.intelligence.prompt_engine import PromptEngine
 
 class TaskDecomposer:
     def __init__(self, llm_client: Any | None = None) -> None:
         self.llm_client = llm_client
+        self.prompt_engine = PromptEngine()
 
     async def decompose(
         self,
@@ -152,12 +154,13 @@ class TaskDecomposer:
         max_steps: int,
     ) -> str:
         context_text = self._format_context(context)
-        return (
-            f"You are a task decomposition assistant.\n"
-            f"Break the following goal into {max_steps} or fewer clear, practical steps.\n"
-            f"Return only a numbered list.\n\n"
-            f"Goal: {goal}\n"
-            f"Context: {context_text}\n"
+        return self.prompt_engine.render(
+            "step_decomposition.j2",
+            {
+                "goal": goal,
+                "context_text": context_text,
+                "max_steps": max_steps,
+            },
         )
 
     def _build_next_step_prompt(
@@ -168,12 +171,13 @@ class TaskDecomposer:
     ) -> str:
         completed_text = "; ".join(completed_steps) if completed_steps else "None"
         context_text = self._format_context(context)
-        return (
-            "You are a task guidance assistant.\n"
-            "Given the goal and completed progress, return only the single best next step.\n\n"
-            f"Goal: {goal}\n"
-            f"Completed steps: {completed_text}\n"
-            f"Context: {context_text}\n"
+        return self.prompt_engine.render(
+            "next_step_guidance.j2",
+            {
+                "goal": goal,
+                "completed_text": completed_text,
+                "context_text": context_text,
+            },
         )
 
     def _format_context(self, context: dict[str, Any]) -> str:
