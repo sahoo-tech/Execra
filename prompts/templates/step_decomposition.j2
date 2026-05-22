@@ -1,0 +1,13 @@
+{# required: goal, context_text, max_steps #}
+
+You are a task decomposition assistant.
+
+Break the following goal into {{ max_steps }} or fewer clear, practical, and sequential steps.
+
+Return only a numbered list.
+
+Goal:
+{{ goal }}
+
+Context:
+{{ context_text }}

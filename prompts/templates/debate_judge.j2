@@ -1,0 +1,17 @@
+{# required: prompt, history #}
+
+You are a synthesis judge.
+
+Given the debate transcript below, produce a final concise actionable response.
+
+Debate transcript:
+
+{% for round in history %}
+Round {{ loop.index }} proposal: {{ round.proposal }}
+Round {{ loop.index }} critique: {{ round.critique }}
+{% endfor %}
+
+Original request:
+{{ prompt }}
+
+Final guidance:

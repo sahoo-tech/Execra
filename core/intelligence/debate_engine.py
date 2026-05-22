@@ -17,6 +17,7 @@ Typical usage::
     core = IntelligenceCore(client)
     guidance = await core.generate_guidance(prompt, trust_score=0.45)
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -24,6 +25,7 @@ import logging
 import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from core.intelligence.prompt_engine import PromptEngine
 
 if TYPE_CHECKING:  # pragma: no cover
     from core.intelligence.llm_client import BaseLLMClient
@@ -37,22 +39,22 @@ LOW_TRUST_THRESHOLD: float = 0.65
 # Prompt role prefixes
 # ---------------------------------------------------------------------------
 
-_PROPOSER_PREFIX = (
-    "You are a helpful UI guidance assistant acting as the Proposer. "
-    "Suggest the clearest, safest next action for the user."
-)
+# _PROPOSER_PREFIX = (
+#     "You are a helpful UI guidance assistant acting as the Proposer. "
+#     "Suggest the clearest, safest next action for the user."
+# )
 
-_CRITIC_PREFIX = (
-    "You are a critical reviewer acting as the Critic. "
-    "Identify risks, ambiguities, or flaws in the current guidance context."
-)
+# _CRITIC_PREFIX = (
+#     "You are a critical reviewer acting as the Critic. "
+#     "Identify risks, ambiguities, or flaws in the current guidance context."
+# )
 
-_JUDGE_PREFIX = (
-    "You are a synthesis judge. "
-    "Given the debate transcript below, produce a final, concise, "
-    "actionable guidance response that incorporates valid proposals "
-    "and addresses the identified concerns."
-)
+# _JUDGE_PREFIX = (
+#     "You are a synthesis judge. "
+#     "Given the debate transcript below, produce a final, concise, "
+#     "actionable guidance response that incorporates valid proposals "
+#     "and addresses the identified concerns."
+# )
 
 
 # ---------------------------------------------------------------------------
@@ -99,6 +101,7 @@ class DebateEngine:
 
     def __init__(self, client: BaseLLMClient) -> None:
         self._client = client
+        self.prompt_engine = PromptEngine()
 
     async def debate(self, prompt: str, rounds: int = 2) -> str:
         """
@@ -144,42 +147,36 @@ class DebateEngine:
         return result
 
     # ------------------------------------------------------------------
-    # Prompt builders (static — no instance state required)
+    # Prompt builders 
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _build_proposer_prompt(prompt: str, history: list[_DebateRound]) -> str:
-        parts = [_PROPOSER_PREFIX]
-        if history:
-            parts.append("\nDebate history so far:")
-            for i, r in enumerate(history, 1):
-                parts.append(f"  Round {i} proposal: {r.proposal}")
-                parts.append(f"  Round {i} critique: {r.critique}")
-        parts.append(f"\nUser request: {prompt}")
-        parts.append("\nProposal:")
-        return "\n".join(parts)
+    def _build_proposer_prompt(self, prompt: str, history: list[_DebateRound]) -> str:
+        return self.prompt_engine.render(
+            "debate_proposer.j2",
+            {
+                "prompt": prompt,
+                "history": history,
+            },
+        )
 
-    @staticmethod
-    def _build_critic_prompt(prompt: str, history: list[_DebateRound]) -> str:
-        parts = [_CRITIC_PREFIX]
-        if history:
-            parts.append("\nDebate history so far:")
-            for i, r in enumerate(history, 1):
-                parts.append(f"  Round {i} proposal: {r.proposal}")
-                parts.append(f"  Round {i} critique: {r.critique}")
-        parts.append(f"\nUser request: {prompt}")
-        parts.append("\nCritique:")
-        return "\n".join(parts)
+    def _build_critic_prompt(self, prompt: str, history: list[_DebateRound]) -> str:
+        return self.prompt_engine.render(
+            "debate_critic.j2",
+            {
+                "prompt": prompt,
+                "history": history,
+            },
+        )
 
-    @staticmethod
-    def _build_judge_prompt(prompt: str, history: list[_DebateRound]) -> str:
-        parts = [_JUDGE_PREFIX, "\nDebate transcript:"]
-        for i, r in enumerate(history, 1):
-            parts.append(f"  Round {i} proposal: {r.proposal}")
-            parts.append(f"  Round {i} critique: {r.critique}")
-        parts.append(f"\nOriginal request: {prompt}")
-        parts.append("\nFinal guidance:")
-        return "\n".join(parts)
+
+    def _build_judge_prompt(self, prompt: str, history: list[_DebateRound]) -> str:
+        return self.prompt_engine.render(
+            "debate_judge.j2",
+            {
+                "prompt": prompt,
+                "history": history,
+            },
+        )
 
 
 # ---------------------------------------------------------------------------
