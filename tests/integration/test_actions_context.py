@@ -1,3 +1,4 @@
+import os
 import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime
@@ -7,11 +8,26 @@ import api.routes.context as context_module
 
 
 client = TestClient(app)
+TEST_DB_PATH = "data/execra_test.db"
 
 def setup_function():
-    """Reset action log and context before every test."""
+    """Reset action log and context before every test, using a clean test database."""
+    action_logger.db_path = TEST_DB_PATH
     action_logger._stack.clear()
+    if os.path.exists(TEST_DB_PATH):
+        try:
+            os.remove(TEST_DB_PATH)
+        except Exception:
+            pass
     context_module._current_context = None
+
+def teardown_function():
+    """Clean up test database file."""
+    if os.path.exists(TEST_DB_PATH):
+        try:
+            os.remove(TEST_DB_PATH)
+        except Exception:
+            pass
 
 def test_get_actions_empty():
     response = client.get("/api/v1/actions")
@@ -19,6 +35,26 @@ def test_get_actions_empty():
     data = response.json()
     assert data["total"] == 0
     assert data["actions"] == []
+
+def test_create_action():
+    action_data = {
+        "id": "act_post_001",
+        "session_id": "sess_post_001",
+        "timestamp": datetime.now().isoformat(),
+        "type": "keystroke",
+        "description": "Typed command",
+        "domain": "digital",
+        "was_guided": True,
+        "guidance_confidence": 0.85
+    }
+    response = client.post("/api/v1/actions", json=action_data)
+    assert response.status_code == 200
+    assert response.json()["message"] == "Action logged successfully."
+    assert response.json()["action"]["id"] == "act_post_001"
+    
+    # Verify it is in the history
+    assert len(action_logger._stack) == 1
+    assert action_logger._stack[0].id == "act_post_001"
 
 def test_undo_returns_409_when_empty():
     response = client.post("/api/v1/actions/undo")

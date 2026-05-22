@@ -1,0 +1,10 @@
+{
+  "screen_text": "numbers = [1,2,3]\nprint(numbers[5])",
+  "trace_summary": "Out-of-range access detected",
+  "expected_guidance_keywords": [
+    "index",
+    "range",
+    "list"
+  ],
+  "expected_trust_level": "moderate"
+}

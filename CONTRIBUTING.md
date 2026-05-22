@@ -176,8 +176,8 @@ pip install -r requirements-dev.txt
 pip install pre-commit
 pre-commit install
 
-# 9. Install frontend dependencies
-cd frontend
+# 9. Install dashboard dependencies
+cd dashboard
 npm install
 cd ..
 
@@ -202,9 +202,9 @@ python main.py
 docker-compose up --build
 
 # Services will be available at:
-# API Server   → http://localhost:8000
-# Frontend     → http://localhost:3000
-# API Docs     → http://localhost:8000/docs
+# API Server       → http://localhost:8000
+# Svelte Dashboard → http://localhost:5173
+# API Docs         → http://localhost:8000/docs
 ```
 
 ### Keeping Your Fork Updated
@@ -705,10 +705,12 @@ execra/
 │       ├── action_logger.py          # Undo/Replay/Recovery stack
 │       └── guidance_dispatcher.py   # Routes instructions to output layer
 │
-├── 📁 frontend/                      ← Desktop overlay & guidance panel (JS/TS)
-│   ├── overlay/                      # Always-on-top overlay UI
-│   ├── panel/                        # Main guidance panel
-│   └── components/                   # Reusable UI components
+├── 📁 dashboard/                     ← SvelteKit Realtime Monitoring Dashboard
+│   ├── src/                          # Svelte 5 routes, components, and service layers
+│   │   ├── lib/                      # Core helpers e.g. websocket.svelte.ts
+│   │   └── routes/                   # Routing views (+page.svelte)
+│   ├── static/                       # Static public assets
+│   └── package.json                  # SvelteKit dependencies
 │
 ├── 📁 api/                           ← FastAPI REST & WebSocket layer
 │   ├── main.py                       # FastAPI application entrypoint
@@ -737,7 +739,7 @@ execra/
 | `core/intelligence/trust_scorer.py` | Well-isolated, great for adding tests |
 | `core/perception/ocr_engine.py` | Language/OCR improvements welcome |
 | `api/routes/` | Add new REST endpoints following existing patterns |
-| `frontend/components/` | UI improvements and new components |
+| `dashboard/src/` | UI dashboard components, layout styles, and WebSocket hooks |
 | `tests/` | Writing missing unit tests for any core module |
 | `docs/` | Documentation, guides, API references |
 

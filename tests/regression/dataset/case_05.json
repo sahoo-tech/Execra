@@ -1,0 +1,10 @@
+{
+  "screen_text": "for i in range(10 print(i)",
+  "trace_summary": "Missing closing parenthesis detected",
+  "expected_guidance_keywords": [
+    "parenthesis",
+    "loop",
+    "syntax"
+  ],
+  "expected_trust_level": "moderate"
+}

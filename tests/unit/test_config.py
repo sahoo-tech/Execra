@@ -18,7 +18,7 @@ def test_settings_correct_defaults():
     settings = Settings()
 
     # LLM Configuration
-    assert settings.LLM_BACKEND == "gpt-4o"
+    assert settings.LLM_BACKEND == "openai"
     assert settings.OPENAI_API_KEY == ""
     assert settings.GEMINI_API_KEY == ""
 
@@ -34,6 +34,8 @@ def test_settings_correct_defaults():
     assert settings.CORS_ORIGINS == [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
     ]
@@ -98,6 +100,20 @@ def test_settings_override_via_env_vars():
         assert settings.TRUST_SCORE_W1 == 0.6
         assert settings.TRUST_SCORE_W2 == 0.25
         assert settings.TRUST_SCORE_W3 == 0.15
+
+
+def test_default_llm_backend_resolves_in_factory():
+    """Default LLM_BACKEND must match a supported factory branch (not raise ValueError)."""
+    from unittest.mock import patch
+    from core.config import Settings
+
+    settings = Settings()
+    backend = settings.LLM_BACKEND.lower()
+    supported = {"openai", "gemini", "llama"}
+    assert backend in supported, (
+        f"Default LLM_BACKEND '{backend}' is not handled by LLMClientFactory. "
+        f"Supported values: {supported}"
+    )
 
 
 def test_settings_missing_required_key_raises_error():

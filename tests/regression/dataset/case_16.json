@@ -1,0 +1,10 @@
+{
+  "screen_text": "json.loads('{bad json}')",
+  "trace_summary": "JSON decoding failed",
+  "expected_guidance_keywords": [
+    "json",
+    "format",
+    "decode"
+  ],
+  "expected_trust_level": "moderate"
+}

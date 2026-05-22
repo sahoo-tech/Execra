@@ -119,3 +119,35 @@ def test_thread_starts(mock_video_capture, mock_feed_loop):
     mock_feed_loop.assert_called_once()
 
     camera_feed.stop()
+
+@patch("core.perception.camera_feed.time.sleep")
+@patch("cv2.VideoCapture")
+def test_retry_behavior_when_camera_unavailable(
+    mock_video_capture,
+    mock_sleep,
+):
+    """Test retry logic when camera is unavailable."""
+
+    mock_cap = MagicMock()
+
+    mock_cap.isOpened.return_value = False
+
+    mock_video_capture.return_value = mock_cap
+
+    camera_feed = CameraFeed()
+
+    queue = asyncio.Queue()
+
+    loop = asyncio.new_event_loop()
+
+    camera_feed.running = True
+
+    def stop_after_retry(*args, **kwargs):
+        camera_feed.running = False
+
+    mock_sleep.side_effect = stop_after_retry
+
+    camera_feed._feed_loop(queue, loop)
+
+    assert mock_video_capture.called
+    assert mock_sleep.called

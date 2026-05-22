@@ -62,8 +62,10 @@ async def test_log_action_calls_sqlite_insert(logger, sample_action):
 
         await logger.log_action(sample_action)
 
-        mock_db.execute.assert_called_once()
-        mock_db.commit.assert_called_once()
+        # Verify that an INSERT INTO command was executed
+        insert_calls = [call for call in mock_db.execute.call_args_list if "INSERT INTO" in call[0][0]]
+        assert len(insert_calls) == 1
+        assert mock_db.commit.called
 
 
 @pytest.mark.asyncio
@@ -87,8 +89,10 @@ async def test_clear_session_calls_sqlite_delete(logger, sample_action):
 
         await logger.clear_session("sess_001")
 
-        mock_db.execute.assert_called_once()
-        mock_db.commit.assert_called_once()
+        # Verify that a DELETE FROM command was executed
+        delete_calls = [call for call in mock_db.execute.call_args_list if "DELETE FROM" in call[0][0]]
+        assert len(delete_calls) == 1
+        assert mock_db.commit.called
 
 @pytest.mark.asyncio
 async def test_get_history_returns_list(logger):

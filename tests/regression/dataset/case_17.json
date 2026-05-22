@@ -1,0 +1,10 @@
+{
+  "screen_text": "requests.get('http://bad-url')",
+  "trace_summary": "Connection timeout occurred",
+  "expected_guidance_keywords": [
+    "network",
+    "timeout",
+    "connection"
+  ],
+  "expected_trust_level": "uncertain"
+}

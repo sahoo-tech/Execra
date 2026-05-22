@@ -29,19 +29,19 @@ def retry(max_retries: int = 3, base_delay: float = 1.0):
                     try:
                         return await func(*args, **kwargs)
                     except (RateLimitError, APIError) as e:
-                        if attempt == max_retries-1:
+                        if attempt == max_retries - 1:
                             func_name = getattr(func, "__name__", "unknown_function")
                             logger.error(f"Max retries exceeded for {func_name}: {e}")
                             raise
 
-                        delay = base_delay * (2 ** attempt)
+                        delay = base_delay * (2**attempt)
                         logger.warning(
                             f"Retry {attempt + 1}/{max_retries} "
                             f"after {delay:.1f}s due to: {e}"
                         )
                         await asyncio.sleep(delay)
 
-                return async_wapper
+            return async_wrapper
 
         else:
 
@@ -51,12 +51,12 @@ def retry(max_retries: int = 3, base_delay: float = 1.0):
                     try:
                         return func(*args, **kwargs)
                     except (RateLimitError, APIError) as e:
-                        if attempt == max_retries-1:
+                        if attempt == max_retries - 1:
                             func_name = getattr(func, "__name__", "unknown_function")
                             logger.error(f"Max retries exceeded for {func_name}: {e}")
                             raise
 
-                        delay = base_delay * (2 ** attempt)
+                        delay = base_delay * (2**attempt)
                         logger.warning(
                             f"Retry {attempt + 1}/{max_retries} "
                             f"after {delay:.1f}s due to: {e}"

@@ -1,0 +1,502 @@
+[
+  {
+    "id": 1,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "easy",
+    "code": "for i in range(5)\n    print(i)",
+    "expected_guidance": "Missing colon after for loop declaration",
+    "ground_truth_fix": "for i in range(5):\n    print(i)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 2,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "easy",
+    "code": "if x == 5\n    print(x)",
+    "expected_guidance": "Missing colon after if statement",
+    "ground_truth_fix": "if x == 5:\n    print(x)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 3,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "easy",
+    "code": "print('hello'",
+    "expected_guidance": "Missing closing parenthesis in print statement",
+    "ground_truth_fix": "print('hello')",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 4,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "easy",
+    "code": "def greet(name)\n    return name",
+    "expected_guidance": "Missing colon after function declaration",
+    "ground_truth_fix": "def greet(name):\n    return name",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 5,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "medium",
+    "code": "numbers = [1,2,3\nprint(numbers)",
+    "expected_guidance": "List bracket is not closed properly",
+    "ground_truth_fix": "numbers = [1,2,3]\nprint(numbers)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 6,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "easy",
+    "code": "while True\n    break",
+    "expected_guidance": "Missing colon after while statement",
+    "ground_truth_fix": "while True:\n    break",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 7,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "medium",
+    "code": "x = 5\nif(x > 2\n    print(x)",
+    "expected_guidance": "Closing parenthesis missing in if condition",
+    "ground_truth_fix": "x = 5\nif(x > 2):\n    print(x)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 8,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "easy",
+    "code": "class Student\n    pass",
+    "expected_guidance": "Missing colon after class declaration",
+    "ground_truth_fix": "class Student:\n    pass",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 9,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "medium",
+    "code": "try:\nprint(10/0)",
+    "expected_guidance": "Indented block expected after try statement",
+    "ground_truth_fix": "try:\n    print(10/0)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 10,
+    "language": "python",
+    "category": "syntax",
+    "difficulty": "easy",
+    "code": "name = 'John\nprint(name)",
+    "expected_guidance": "String literal is not terminated properly",
+    "ground_truth_fix": "name = 'John'\nprint(name)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 11,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "easy",
+    "code": "print(age)",
+    "expected_guidance": "Undefined variable 'age' detected",
+    "ground_truth_fix": "age = 25\nprint(age)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 12,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "medium",
+    "code": "nums = [1,2,3]\nprint(nums[5])",
+    "expected_guidance": "List index out of range access detected",
+    "ground_truth_fix": "nums = [1,2,3]\nprint(nums[2])",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 13,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "easy",
+    "code": "x = 10/0",
+    "expected_guidance": "Division by zero detected",
+    "ground_truth_fix": "x = 10/2",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 14,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "medium",
+    "code": "import maths",
+    "expected_guidance": "Module 'maths' not found",
+    "ground_truth_fix": "import math",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 15,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "medium",
+    "code": "num = '5'\nprint(num + 5)",
+    "expected_guidance": "Type mismatch between string and integer",
+    "ground_truth_fix": "num = 5\nprint(num + 5)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 16,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "easy",
+    "code": "data = {'a':1}\nprint(data['b'])",
+    "expected_guidance": "Key 'b' does not exist in dictionary",
+    "ground_truth_fix": "data = {'a':1, 'b':2}\nprint(data['b'])",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 17,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "medium",
+    "code": "f = open('missing.txt')",
+    "expected_guidance": "Referenced file does not exist",
+    "ground_truth_fix": "f = open('existing.txt')",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 18,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "medium",
+    "code": "numbers = None\nnumbers.append(1)",
+    "expected_guidance": "Cannot call append on NoneType object",
+    "ground_truth_fix": "numbers = []\nnumbers.append(1)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 19,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "easy",
+    "code": "value = int('abc')",
+    "expected_guidance": "Invalid integer conversion detected",
+    "ground_truth_fix": "value = int('123')",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 20,
+    "language": "python",
+    "category": "runtime",
+    "difficulty": "medium",
+    "code": "items = (1,2,3)\nitems[0] = 5",
+    "expected_guidance": "Tuple objects are immutable",
+    "ground_truth_fix": "items = [1,2,3]\nitems[0] = 5",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 21,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "medium",
+    "code": "count = 0\nwhile count < 5:\n    print(count)",
+    "expected_guidance": "Potential infinite loop because counter is never updated",
+    "ground_truth_fix": "count = 0\nwhile count < 5:\n    print(count)\n    count += 1",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 22,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "easy",
+    "code": "if x = 5:\n    print(x)",
+    "expected_guidance": "Assignment operator used instead of comparison operator",
+    "ground_truth_fix": "if x == 5:\n    print(x)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 23,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "medium",
+    "code": "nums = [1,2,3]\nfor i in range(len(nums)+1):\n    print(nums[i])",
+    "expected_guidance": "Loop iterates beyond valid list indices",
+    "ground_truth_fix": "nums = [1,2,3]\nfor i in range(len(nums)):\n    print(nums[i])",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 24,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "easy",
+    "code": "total = 1\nfor i in range(5):\n    total *= 0",
+    "expected_guidance": "Multiplying by zero resets total permanently",
+    "ground_truth_fix": "total = 1\nfor i in range(5):\n    total *= i+1",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 25,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "medium",
+    "code": "def is_even(n):\n    return n % 2 == 1",
+    "expected_guidance": "Even number logic condition is incorrect",
+    "ground_truth_fix": "def is_even(n):\n    return n % 2 == 0",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 26,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "medium",
+    "code": "average = sum([1,2,3])/0",
+    "expected_guidance": "Average calculation divides by zero",
+    "ground_truth_fix": "average = sum([1,2,3])/3",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 27,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "easy",
+    "code": "flag = False\nif flag:\n    print('Disabled')",
+    "expected_guidance": "Conditional logic contradicts intended behavior",
+    "ground_truth_fix": "flag = True\nif flag:\n    print('Disabled')",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 28,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "medium",
+    "code": "x = [1,2,3]\ny = x\ny.append(4)\nprint(x)",
+    "expected_guidance": "List reference sharing may cause unintended mutation",
+    "ground_truth_fix": "x = [1,2,3]\ny = x.copy()\ny.append(4)\nprint(x)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 29,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "medium",
+    "code": "for i in range(10,0):\n    print(i)",
+    "expected_guidance": "Range step direction prevents loop execution",
+    "ground_truth_fix": "for i in range(10,0,-1):\n    print(i)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 30,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "easy",
+    "code": "result = [] * 5",
+    "expected_guidance": "Multiplying an empty list still produces an empty list",
+    "ground_truth_fix": "result = [0] * 5",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 31,
+    "language": "python",
+    "category": "security",
+    "difficulty": "medium",
+    "code": "password = 'admin123'",
+    "expected_guidance": "Hardcoded credentials detected",
+    "ground_truth_fix": "password = os.getenv('PASSWORD')",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 32,
+    "language": "python",
+    "category": "security",
+    "difficulty": "hard",
+    "code": "user_input = input()\neval(user_input)",
+    "expected_guidance": "Unsafe use of eval on user-controlled input",
+    "ground_truth_fix": "user_input = input()\nprint(user_input)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 33,
+    "language": "python",
+    "category": "security",
+    "difficulty": "medium",
+    "code": "query = \"SELECT * FROM users WHERE id = \" + user_id",
+    "expected_guidance": "Potential SQL injection vulnerability detected",
+    "ground_truth_fix": "query = \"SELECT * FROM users WHERE id = ?\"",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 34,
+    "language": "python",
+    "category": "security",
+    "difficulty": "medium",
+    "code": "import pickle\npickle.loads(data)",
+    "expected_guidance": "Deserializing untrusted pickle data is unsafe",
+    "ground_truth_fix": "import json\njson.loads(data)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 35,
+    "language": "python",
+    "category": "security",
+    "difficulty": "easy",
+    "code": "os.system('rm -rf ' + user_input)",
+    "expected_guidance": "Unsanitized shell command execution detected",
+    "ground_truth_fix": "subprocess.run(['rm','-rf',safe_path])",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 36,
+    "language": "python",
+    "category": "security",
+    "difficulty": "medium",
+    "code": "api_key = 'SECRET_API_KEY'",
+    "expected_guidance": "Sensitive API key exposed in source code",
+    "ground_truth_fix": "api_key = os.getenv('API_KEY')",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 37,
+    "language": "python",
+    "category": "security",
+    "difficulty": "medium",
+    "code": "open('/tmp/data.txt', 'w').write(user_input)",
+    "expected_guidance": "Unvalidated user input written directly to file",
+    "ground_truth_fix": "open('/tmp/data.txt', 'w').write(sanitize(user_input))",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 38,
+    "language": "python",
+    "category": "security",
+    "difficulty": "easy",
+    "code": "requests.get(url, verify=False)",
+    "expected_guidance": "SSL certificate verification is disabled",
+    "ground_truth_fix": "requests.get(url, verify=True)",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 39,
+    "language": "python",
+    "category": "security",
+    "difficulty": "medium",
+    "code": "debug=True",
+    "expected_guidance": "Debug mode should not be enabled in production",
+    "ground_truth_fix": "debug=False",
+    "should_trigger_guidance": true
+  },
+  {
+    "id": 40,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "easy",
+    "code": "print('Hello World')",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "print('Hello World')",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 41,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "easy",
+    "code": "for i in range(5):\n    print(i)",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "for i in range(5):\n    print(i)",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 42,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "medium",
+    "code": "numbers = [1,2,3]\nprint(sum(numbers))",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "numbers = [1,2,3]\nprint(sum(numbers))",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 43,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "easy",
+    "code": "def greet(name):\n    return f'Hello {name}'",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "def greet(name):\n    return f'Hello {name}'",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 44,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "medium",
+    "code": "data = {'a':1,'b':2}\nprint(data['a'])",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "data = {'a':1,'b':2}\nprint(data['a'])",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 45,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "medium",
+    "code": "import math\nprint(math.sqrt(16))",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "import math\nprint(math.sqrt(16))",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 46,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "easy",
+    "code": "x = [1,2,3]\ny = x.copy()",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "x = [1,2,3]\ny = x.copy()",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 47,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "medium",
+    "code": "with open('file.txt','r') as f:\n    content = f.read()",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "with open('file.txt','r') as f:\n    content = f.read()",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 48,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "easy",
+    "code": "is_admin = True\nif is_admin:\n    print('Access granted')",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "is_admin = True\nif is_admin:\n    print('Access granted')",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 49,
+    "language": "python",
+    "category": "correct_code",
+    "difficulty": "medium",
+    "code": "import requests\nresponse = requests.get('https://example.com', verify=True)",
+    "expected_guidance": "No issues detected",
+    "ground_truth_fix": "import requests\nresponse = requests.get('https://example.com', verify=True)",
+    "should_trigger_guidance": false
+  },
+  {
+    "id": 50,
+    "language": "python",
+    "category": "logic",
+    "difficulty": "hard",
+    "code": "def flatten(lst, result=[]):\n    for item in lst:\n        if isinstance(item, list):\n            flatten(item, result)\n        else:\n            result.append(item)\n    return result",
+    "expected_guidance": "Mutable default argument bug: 'result=[]' persists across calls, accumulating state",
+    "ground_truth_fix": "def flatten(lst, result=None):\n    if result is None:\n        result = []\n    for item in lst:\n        if isinstance(item, list):\n            flatten(item, result)\n        else:\n            result.append(item)\n    return result",
+    "should_trigger_guidance": true
+  }
+]
