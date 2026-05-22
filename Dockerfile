@@ -10,6 +10,7 @@ WORKDIR /app
 
 # Install system dependencies needed for OpenCV, Tesseract, etc.
 RUN apt-get update && apt-get install -y \
+    curl \
     libgl1 \
     libglib2.0-0 \
     tesseract-ocr \
