@@ -1,83 +1,112 @@
-#!/usr/bin/env python3
-"""Execra entrypoint: parse CLI, configure logging, and start the API server."""
+"""
+main.py
+=======
+Execra entry-point.
+
+Starts the FastAPI server together with the real-time guidance pipeline
+so that both share the same asyncio event loop.
+
+Usage::
+
+    python main.py [--domain digital|physical] [--mode passive|active|mixed]
+"""
+
+from __future__ import annotations
 
 import argparse
+import asyncio
+import logging
+import signal
 import sys
-from typing import Any
 
 import uvicorn
 
-from core.config import Settings
+from core.pipeline import Domain, ExecraPipeline, Mode, PipelineConfig
 
-try:
-    from core.logger import setup as setup_logging, get_logger
-except Exception:
-    # Fallback minimal logging if core.logger is unavailable
-    def setup_logging(level: str) -> None:  # type: ignore
-        import logging
-
-        logging.basicConfig(level=getattr(logging, level.upper(), logging.INFO))
-
-    def get_logger(name: str):  # type: ignore
-        import logging
-
-        return logging.getLogger(name)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s – %(message)s",
+    datefmt="%H:%M:%S",
+)
+logger = logging.getLogger(__name__)
 
 
-def print_banner(settings: Settings, mode: str, domain: str, args: Any) -> None:
-    lines = []
-    lines.append("+" + "=" * 46 + "+")
-    lines.append("|{:^46}|".format("EXECRA — STARTUP"))
-    lines.append("+" + "-" * 46 + "+")
-    lines.append("| Mode: {:<36}|".format(mode))
-    lines.append("| Domain: {:<34}|".format(domain))
-    lines.append("|{:^46}|".format("Active Settings"))
-    lines.append("| LLM_BACKEND: {:<33}|".format(settings.LLM_BACKEND))
-    lines.append("| SCREEN_CAPTURE_FPS: {:<25}|".format(settings.SCREEN_CAPTURE_FPS))
-    lines.append("| API_HOST: {:<36}|".format(settings.API_HOST))
-    lines.append("| API_PORT: {:<36}|".format(settings.API_PORT))
-    lines.append("| LOG_LEVEL: {:<35}|".format(settings.LOG_LEVEL))
-    lines.append("+" + "=" * 46 + "+")
-
-    print("\n".join(lines))
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(prog="execra")
-    parser.add_argument("--mode", choices=["passive", "active", "mixed"], default="passive")
-    parser.add_argument("--domain", choices=["digital", "physical", "hybrid"], default="digital")
-    parser.add_argument("--fps", type=int, default=2)
-    parser.add_argument("--llm", choices=["gpt-4o", "gemini", "llama"], default="gpt-4o")
-    parser.add_argument("--log-level", choices=["DEBUG", "INFO", "WARNING", "ERROR"], default="INFO")
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Run the Execra guidance system")
+    parser.add_argument(
+        "--domain", choices=["digital", "physical"], default="digital",
+    )
+    parser.add_argument(
+        "--mode", choices=["passive", "active", "mixed"], default="passive",
+    )
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument(
+        "--log-level", default="info",
+        choices=["debug", "info", "warning", "error"],
+    )
     return parser.parse_args()
 
 
-def main() -> None:
-    args = parse_args()
+async def _run(args: argparse.Namespace) -> None:
+    pipeline = ExecraPipeline(
+        domain=args.domain,
+        mode=args.mode,
+        config=PipelineConfig(),
+    )
 
-    # Instantiate settings (reads .env / environment)
-    settings = Settings()
+    # Inject pipeline into the API module before the server starts
+    import api.main as api_module
+    api_module.pipeline = pipeline
 
-    # Apply CLI overrides
-    settings.LLM_BACKEND = args.llm
-    settings.SCREEN_CAPTURE_FPS = args.fps
-    settings.LOG_LEVEL = args.log_level
+    # Graceful shutdown on SIGINT / SIGTERM
+    loop = asyncio.get_running_loop()
+    shutdown_event = asyncio.Event()
 
-    # Setup logging
-    setup_logging(settings.LOG_LEVEL)
-    logger = get_logger("execra.main")
-    logger.info("Starting Execra (mode=%s domain=%s)", args.mode, args.domain)
+    def _handle_signal(sig: int) -> None:
+        logger.info("Signal %s – initiating shutdown", signal.Signals(sig).name)
+        shutdown_event.set()
 
-    # Print startup banner
-    print_banner(settings, args.mode, args.domain, args)
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, _handle_signal, sig)
 
-    # Start FastAPI via uvicorn programmatically
+    uvicorn_config = uvicorn.Config(
+        "api.main:app",
+        host=args.host,
+        port=args.port,
+        log_level=args.log_level,
+        loop="none",
+    )
+    server = uvicorn.Server(uvicorn_config)
+
+    logger.info("Starting Execra (domain=%s, mode=%s)", args.domain, args.mode)
+
     try:
-        uvicorn.run("api.main:app", host=settings.API_HOST, port=settings.API_PORT, log_level=settings.LOG_LEVEL.lower())
-    except Exception as exc:
-        logger.exception("Failed to start uvicorn: %s", exc)
-        sys.exit(1)
+        await asyncio.gather(
+            server.serve(),
+            pipeline.run(),
+            _wait_for_shutdown(shutdown_event, pipeline, server),
+        )
+    except asyncio.CancelledError:
+        pass
+    finally:
+        logger.info("Execra exited. Metrics: %s", pipeline.get_metrics())
+
+
+async def _wait_for_shutdown(
+    event: asyncio.Event,
+    pipeline: ExecraPipeline,
+    server: "uvicorn.Server",
+) -> None:
+    await event.wait()
+    await pipeline.stop()
+    server.should_exit = True
 
 
 if __name__ == "__main__":
-    main()
+    args = _parse_args()
+    logging.getLogger().setLevel(args.log_level.upper())
+    try:
+        asyncio.run(_run(args))
+    except KeyboardInterrupt:
+        sys.exit(0)
