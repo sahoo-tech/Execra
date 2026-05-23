@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -97,7 +98,7 @@ async def test_perception_bus_integration_flow(mock_video_capture, mock_mss):
     mock_sct = MagicMock()
     mock_sct.monitors = [None, {}]
     fake_screen_frame = np.zeros((10, 10, 4), dtype=np.uint8)
-    fake_screen_frame[0, 0] = [10, 20, 30, 255]  # BGRA
+    fake_screen_frame[:] = [10, 20, 30, 255]  # BGRA
     mock_sct.grab.return_value = fake_screen_frame
     mock_mss.return_value.__enter__.return_value = mock_sct
 
@@ -108,16 +109,22 @@ async def test_perception_bus_integration_flow(mock_video_capture, mock_mss):
     mock_cap.read.return_value = (True, fake_camera_frame)
     mock_video_capture.return_value = mock_cap
 
-    # Instantiate real modules with mocked hardware
-    screen_cap = ScreenCapture(fps=10)
-    camera_feed = CameraFeed(fps=10)
+    class ThreadAsProcess(threading.Thread):
+        @property
+        def pid(self):
+            return 99999
 
-    bus = PerceptionBus(
-        domain="hybrid", screen_capture=screen_cap, camera_feed=camera_feed
-    )
+    with patch("core.perception.screen_capture.Process", ThreadAsProcess):
+        # Instantiate real modules with mocked hardware
+        screen_cap = ScreenCapture(fps=10)
+        camera_feed = CameraFeed(fps=10)
 
-    # Start the bus
-    await bus.start()
+        bus = PerceptionBus(
+            domain="hybrid", screen_capture=screen_cap, camera_feed=camera_feed
+        )
+
+        # Start the bus
+        await bus.start()
 
     try:
         # Give capture threads a brief moment to run and enqueue frames
@@ -143,5 +150,7 @@ async def test_perception_bus_integration_flow(mock_video_capture, mock_mss):
         await bus.stop()
 
     # Verify that the capture threads are stopped
-    assert not screen_cap.thread.is_alive()
+    assert screen_cap._process is not None
+    assert not screen_cap._process.is_alive()
+    assert camera_feed.thread is not None
     assert not camera_feed.thread.is_alive()

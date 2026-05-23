@@ -3,9 +3,10 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import status, mode
+from api.routes import status, mode, plugins
 from api.routes import actions, context
 from api.websockets import guidance as ws_guidance
+from api.websockets import router as ws_router
 
 from core.config import settings
 from core.errors import handle_exception  # ✅ NEW
@@ -32,6 +33,7 @@ async def startup_event():
     logger.info("Execra API starting...")
     from api.websockets.router import broadcast_action_log
     from core.hybrid.action_logger import action_logger
+
     action_logger.register_callback(broadcast_action_log)
 
 
@@ -41,6 +43,7 @@ async def shutdown_event():
     logger.info("Execra API shutting down...")
     from api.websockets.router import broadcast_action_log
     from core.hybrid.action_logger import action_logger
+
     action_logger.unregister_callback(broadcast_action_log)
 
 
@@ -50,10 +53,7 @@ def read_root():
     try:
         return {
             "status": "success",
-            "data": {
-                "message": "Execra is running",
-                "version": "0.1.0"
-            }
+            "data": {"message": "Execra is running", "version": "0.1.0"},
         }
     except Exception as e:
         return handle_exception(e)
@@ -66,6 +66,7 @@ try:
     app.include_router(mode.router, prefix="/api/v1")
     app.include_router(actions.router, prefix="/api/v1")
     app.include_router(context.router, prefix="/api/v1")
+    app.include_router(plugins.router, prefix="/api/v1")
 
 except Exception as e:
     handle_exception(e)
@@ -77,6 +78,7 @@ app.include_router(context.router, prefix="/api/v1")
 
 # WebSocket endpoints (no prefix — WS routes use the path as-is)
 app.include_router(ws_guidance.router)
+app.include_router(ws_router.router)
 
-# Alert suppression endpoints 
+# Alert suppression endpoints
 app.include_router(suppression.router, prefix="/api/v1")
