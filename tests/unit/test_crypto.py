@@ -1,9 +1,8 @@
 import pytest
-from cryptography.fernet import InvalidToken
 from core.security.crypto import encrypt, decrypt
 
 
-def test_round_trip_encrypt_decrypt():
+def test_round_trip_encrypt_decrypt(encryption_key):
     """Encrypted data should decrypt back to the original."""
     original = "User edited line 42 in main.py"
     encrypted = encrypt(original)
@@ -12,7 +11,7 @@ def test_round_trip_encrypt_decrypt():
     assert decrypted == original
 
 
-def test_encrypted_data_is_not_plaintext():
+def test_encrypted_data_is_not_plaintext(encryption_key):
     """Encrypted string should not contain the original plaintext."""
     original = "User edited line 42 in main.py"
     encrypted = encrypt(original)
@@ -22,7 +21,7 @@ def test_encrypted_data_is_not_plaintext():
     assert "main.py" not in encrypted
 
 
-def test_encryption_is_non_deterministic():
+def test_encryption_is_non_deterministic(encryption_key):
     """Same plaintext should encrypt to different ciphertexts (random IV)."""
     original = "Hello World"
     encrypted_one = encrypt(original)
@@ -33,8 +32,7 @@ def test_encryption_is_non_deterministic():
     assert decrypt(encrypted_two) == original
 
 
-
-def test_empty_string_encryption():
+def test_empty_string_encryption(encryption_key):
     """Empty strings should encrypt and decrypt without error."""
     encrypted = encrypt("")
     decrypted = decrypt(encrypted)
@@ -48,7 +46,7 @@ def test_none_input_returns_none():
     assert decrypt(None) is None
 
 
-def test_unicode_and_special_chars():
+def test_unicode_and_special_chars(encryption_key):
     """Unicode and special characters should round-trip correctly."""
     original = "Héllo Wörld! 你好 🌍 \n\t<script>alert('xss')</script>"
     encrypted = encrypt(original)
@@ -57,7 +55,7 @@ def test_unicode_and_special_chars():
     assert decrypted == original
 
 
-def test_invalid_ciphertext_raises_error():
+def test_invalid_ciphertext_raises_error(encryption_key):
     """Trying to decrypt garbage should raise an exception."""
     with pytest.raises(Exception):
         decrypt("not-a-valid-ciphertext-at-all")

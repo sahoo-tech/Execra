@@ -4,10 +4,11 @@ Modules should import settings from here instead of os.getenv().
 """
 
 import os
-from typing import List, Optional
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import List, Optional
+
 from dotenv import load_dotenv
+
 from core.utils.env_validator import assert_env
 
 # Load .env file
@@ -58,6 +59,18 @@ class Settings:
     # Redis Configuration
     REDIS_URL: str = "redis://localhost:6379"
     REDIS_AUTH: Optional[str] = None
+
+    # WebSocket Configuration
+    WS_API_TOKEN: str = ""
+    WS_MAX_CONNECTIONS: int = 100
+    WS_RATE_LIMIT_MESSAGES: int = 60
+    WS_RATE_LIMIT_WINDOW_S: int = 60
+    WS_HEARTBEAT_INTERVAL_S: int = 30
+
+    # Trust Score Weights
+    TRUST_SCORE_W1: float = 0.5
+    TRUST_SCORE_W2: float = 0.3
+    TRUST_SCORE_W3: float = 0.2
 
     # Trace Anomaly Detection (Isolation Forest)
     # Expected fraction of anomalous traces in training data.
@@ -117,6 +130,18 @@ class Settings:
             self.REDIS_URL = val
         if val := os.getenv("REDIS_PASSWORD"):
             self.REDIS_AUTH = val
+
+        # WebSocket
+        if val := os.getenv("WS_API_TOKEN"):
+            self.WS_API_TOKEN = val
+        if val := os.getenv("WS_MAX_CONNECTIONS"):
+            self.WS_MAX_CONNECTIONS = int(val)
+        if val := os.getenv("WS_RATE_LIMIT_MESSAGES"):
+            self.WS_RATE_LIMIT_MESSAGES = int(val)
+        if val := os.getenv("WS_RATE_LIMIT_WINDOW_S"):
+            self.WS_RATE_LIMIT_WINDOW_S = int(val)
+        if val := os.getenv("WS_HEARTBEAT_INTERVAL_S"):
+            self.WS_HEARTBEAT_INTERVAL_S = int(val)
 
         # Trust Score Weights
         if env_val := os.getenv("TRUST_SCORE_W1"):

@@ -1,0 +1,21 @@
+{
+  "name": "execra-overlay",
+  "version": "1.0.0",
+  "description": "Execra always-on-top guidance overlay — Electron.js frontend",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "keywords": [
+    "execra",
+    "electron",
+    "overlay",
+    "guidance"
+  ],
+  "author": "Execra Contributors",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^42.2.0"
+  }
+}

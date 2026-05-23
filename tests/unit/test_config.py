@@ -7,7 +7,6 @@ import os
 from unittest.mock import patch
 
 import pytest
-from dotenv import load_dotenv
 
 
 def test_settings_correct_defaults():
@@ -104,12 +103,11 @@ def test_settings_override_via_env_vars():
 
 def test_default_llm_backend_resolves_in_factory():
     """Default LLM_BACKEND must match a supported factory branch (not raise ValueError)."""
-    from unittest.mock import patch
     from core.config import Settings
 
     settings = Settings()
     backend = settings.LLM_BACKEND.lower()
-    supported = {"openai", "gemini", "llama"}
+    supported = {"openai", "gemini", "llama", "local"}
     assert backend in supported, (
         f"Default LLM_BACKEND '{backend}' is not handled by LLMClientFactory. "
         f"Supported values: {supported}"
@@ -127,9 +125,10 @@ def test_settings_missing_required_key_raises_error():
     with pytest.raises(ValueError, match="Missing required configuration"):
         settings.validate_required()
 
-    # Now set the keys and validation should pass
+    # Now set all required keys — validation should pass
     settings.OPENAI_API_KEY = "sk-test"
     settings.GEMINI_API_KEY = "gemini-test"
+    settings.ENCRYPTION_KEY = "a" * 64
     settings.validate_required()  # Should not raise
 
 

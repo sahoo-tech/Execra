@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self';" />
+  <title>Execra Guidance Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ─── Root overlay container ─────────────────────────────────────── -->
+  <div id="overlay" class="overlay" role="region" aria-label="Execra Guidance Overlay">
+
+    <!-- ─── Title bar (always visible, drag handle) ───────────────────── -->
+    <header id="title-bar" class="title-bar" aria-label="Overlay title bar">
+      <div class="title-bar-left">
+        <span class="execra-logo" aria-hidden="true">⬡</span>
+        <span class="execra-wordmark">Execra</span>
+        <!-- Mode indicator pill -->
+        <span id="mode-pill" class="mode-pill mode-passive" aria-label="Current mode" title="Guidance mode">PASSIVE</span>
+      </div>
+      <div class="title-bar-right">
+        <!-- Connection status dot -->
+        <span id="conn-dot" class="conn-dot conn-disconnected" title="WebSocket connection status" aria-label="Connection status"></span>
+        <!-- Minimize / expand toggle -->
+        <button id="btn-toggle" class="icon-btn" aria-label="Toggle overlay size" title="Minimize / Expand">
+          <svg id="icon-minimize" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="18 15 12 9 6 15"/></svg>
+          <svg id="icon-expand"   xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" style="display:none"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <!-- Close button -->
+        <button id="btn-close" class="icon-btn icon-btn-close" aria-label="Close overlay" title="Close Execra overlay">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ─── Collapsible body ──────────────────────────────────────────── -->
+    <main id="overlay-body" class="overlay-body" aria-live="polite" aria-atomic="false">
+
+      <!-- Error banner -->
+      <div id="error-banner" class="error-banner" role="alert" aria-live="assertive" style="display:none">
+        <span class="error-icon" aria-hidden="true">⚠</span>
+        <span id="error-text" class="error-text"></span>
+      </div>
+
+      <!-- Step counter -->
+      <div class="step-row" aria-label="Step progress">
+        <span id="step-counter" class="step-counter" aria-label="Step counter">Step — of —</span>
+        <!-- Source tag pills -->
+        <div id="source-tags" class="source-tags" aria-label="Guidance sources"></div>
+      </div>
+
+      <!-- Confidence bar -->
+      <div class="confidence-wrap" aria-label="Confidence level">
+        <div class="confidence-label-row">
+          <span class="confidence-label">Confidence</span>
+          <span id="confidence-pct" class="confidence-pct" aria-live="polite">—</span>
+        </div>
+        <div class="confidence-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="confidence-track">
+          <div id="confidence-fill" class="confidence-fill"></div>
+        </div>
+      </div>
+
+      <!-- Instruction card -->
+      <div id="instruction-card" class="instruction-card" aria-label="Current guidance instruction">
+        <p id="instruction-text" class="instruction-text">Waiting for guidance…</p>
+      </div>
+
+      <!-- Reasoning (collapsible) -->
+      <details id="reasoning-details" class="reasoning-details" style="display:none">
+        <summary class="reasoning-summary">Reasoning</summary>
+        <p id="reasoning-text" class="reasoning-text"></p>
+      </details>
+
+      <!-- Active Mode input (shown only in active / mixed mode) -->
+      <div id="active-input-wrap" class="active-input-wrap" style="display:none" aria-label="Active mode input">
+        <label for="active-input" class="active-input-label">Ask Execra</label>
+        <div class="active-input-row">
+          <input
+            id="active-input"
+            class="active-input"
+            type="text"
+            placeholder="Type your question…"
+            maxlength="2000"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Active mode question input"
+          />
+          <button id="btn-send" class="send-btn" aria-label="Send question">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Footer: reconnect status -->
+      <footer class="overlay-footer">
+        <span id="status-text" class="status-text">Connecting…</span>
+      </footer>
+
+    </main><!-- /overlay-body -->
+  </div><!-- /overlay -->
+
+  <script src="app.js"></script>
+</body>
+</html>
