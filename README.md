@@ -775,6 +775,261 @@ execra/
 └── main.py                          # Main application entry point
 ```
 
+# 🛠️Troubleshooting & Setup Guide
+
+This guide helps beginners contributing to Execra during GSSoC 2026.
+
+---
+
+# 1. System Requirements
+
+Before starting, ensure these are installed:
+
+- Python 3.10+
+- Node.js 18+
+- npm
+- FFmpeg
+- Git
+
+---
+
+# 2. Python Setup Issues
+
+## Problem
+
+'python' is not recognized as an internal or external command
+
+## Solution
+
+Install Python from:
+
+https://www.python.org/downloads/
+
+During installation:
+
+✅ Check "Add Python to PATH"
+
+Verify installation:
+
+```bash
+python --version
+```
+
+---
+
+# 3. Virtual Environment Issues
+
+## Create Virtual Environment
+
+```bash
+python -m venv venv
+```
+
+## Activate on Windows
+
+```bash
+venv\Scripts\activate
+```
+
+## Activate on Linux/macOS
+
+```bash
+source venv/bin/activate
+```
+
+## Common Error
+
+Execution policy prevents activation
+
+## Fix for PowerShell
+
+```powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+---
+
+# 4. Node.js & npm Issues
+
+## Problem
+
+npm command not found
+
+## Solution
+
+Install Node.js from:
+
+https://nodejs.org/
+
+Verify installation:
+
+```bash
+node --version
+npm --version
+```
+
+---
+
+# 5. Install Project Dependencies
+
+## Python Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## Frontend Dependencies
+
+```bash
+cd dashboard
+npm install
+```
+
+---
+
+# 6. FFmpeg Installation
+
+## Verify FFmpeg
+
+```bash
+ffmpeg -version
+```
+
+## Windows
+
+1. Download FFmpeg
+2. Extract the zip file
+3. Add FFmpeg bin folder to PATH
+
+## Ubuntu/Linux
+
+```bash
+sudo apt install ffmpeg
+```
+
+---
+
+# 7. Port Conflict Issues
+
+## Problem
+
+Port 8000 already in use
+
+## Windows Fix
+
+```bash
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+```
+
+## Linux/macOS Fix
+
+```bash
+lsof -i :8000
+kill -9 <PID>
+```
+
+---
+
+# 8. Running Backend
+
+From project root:
+
+```bash
+python main.py
+```
+
+Expected output:
+
+```text
+Uvicorn running on http://localhost:8000
+```
+
+---
+
+# 9. Running Frontend Dashboard
+
+```bash
+cd dashboard
+npm run dev
+```
+
+Expected output:
+
+```text
+Local: http://localhost:5173
+```
+
+---
+
+# 10. Dependency Installation Errors
+
+## Upgrade pip
+
+```bash
+pip install --upgrade pip
+```
+
+## Clean npm cache
+
+```bash
+npm cache clean --force
+```
+
+## Retry installation
+
+```bash
+npm install
+```
+
+---
+
+# 11. Useful Verification Commands
+
+## Python
+
+```bash
+python --version
+```
+
+## Node.js
+
+```bash
+node --version
+```
+
+## npm
+
+```bash
+npm --version
+```
+
+## FFmpeg
+
+```bash
+ffmpeg -version
+```
+
+---
+
+# 12. Beginner Tips
+
+- Always create a new branch before working
+- Never push directly to main
+- Pull latest changes before starting
+- Read issue descriptions carefully
+- Test your changes before creating PR
+
+---
+
+# 13. Need Help?
+
+If you still face issues:
+
+- Open a GitHub issue
+- Ask maintainers politely
+- Share screenshots and error logs
+
 ---
 
 ## 🤝 Contributing (GSSoC 2026)
