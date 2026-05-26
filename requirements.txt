@@ -19,3 +19,4 @@ pydantic
 cryptography
 scikit-learn
 joblib
+notion-client

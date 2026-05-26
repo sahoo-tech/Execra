@@ -8,6 +8,9 @@
   let historyError = $state<string | null>(null);
   let isSendingAction = $state(false);
   let isUndoingAction = $state(false);
+  let isExportingNotion = $state(false);
+  let exportSuccessUrl = $state<string | null>(null);
+  let exportErrorMsg = $state<string | null>(null);
 
   // Form inputs for simulating a new action
   let simType = $state('user_click');
@@ -94,6 +97,42 @@
       console.error('Failed to undo last action:', err);
     } finally {
       isUndoingAction = false;
+    }
+  }
+
+  // Export session to Notion via POST /api/v1/session/export/notion
+  async function handleExportNotion() {
+    if (isExportingNotion) return;
+    try {
+      isExportingNotion = true;
+      exportSuccessUrl = null;
+      exportErrorMsg = null;
+      const actions = allActions();
+      const currentSessionId = actions.length > 0 ? actions[0].session_id : null;
+      
+      if (!currentSessionId) {
+        exportErrorMsg = 'No active session to export. Simulate an action first.';
+        return;
+      }
+
+      const res = await fetch('http://127.0.0.1:8000/api/v1/session/export/notion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: currentSessionId })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        exportErrorMsg = data.detail || res.statusText;
+      } else {
+        exportSuccessUrl = data.url;
+      }
+    } catch (err) {
+      console.error('Failed to export to Notion:', err);
+      exportErrorMsg = 'Network error while exporting to Notion. Please check your connection.';
+    } finally {
+      isExportingNotion = false;
     }
   }
 
@@ -446,6 +485,24 @@
                 REFRESH DB
               </button>
             </div>
+
+            <div class="flex items-center justify-between p-3 bg-[#0b1020]/60 border border-slate-800 rounded-md">
+              <div class="text-xs">
+                <p class="font-bold text-slate-300">Export to Notion</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Sync session actions to Notion page</p>
+              </div>
+              <button 
+                onclick={handleExportNotion} 
+                disabled={isExportingNotion}
+                class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs px-3.5 py-1.5 rounded font-semibold transition cursor-pointer disabled:opacity-50"
+              >
+                {#if isExportingNotion}
+                  EXPORTING...
+                {:else}
+                  EXPORT NOW
+                {/if}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -472,4 +529,59 @@
       </div>
     </section>
   </main>
+
+  <!-- Notion Export Success Modal -->
+  {#if exportSuccessUrl}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+      <div class="bg-[#111827] border border-slate-700 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all">
+        <div class="p-6 text-center">
+          <div class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
+            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2 tracking-wide">Export Successful!</h3>
+          <p class="text-slate-400 text-sm mb-6">Your Execra session has been securely synced to Notion.</p>
+          
+          <div class="bg-[#0b1020] rounded-lg p-4 border border-slate-800 mb-6 flex flex-col space-y-3">
+            <span class="text-[10px] uppercase tracking-widest font-bold text-slate-500">Notion Page Link</span>
+            <a href={exportSuccessUrl} target="_blank" rel="noopener noreferrer" class="text-emerald-400 font-mono text-xs break-all hover:underline hover:text-emerald-300">
+              {exportSuccessUrl}
+            </a>
+          </div>
+          
+          <button 
+            onclick={() => { exportSuccessUrl = null; }}
+            class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase tracking-wider text-xs py-3 rounded-lg transition-colors border border-slate-600 cursor-pointer"
+          >
+            CLOSE WINDOW
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  <!-- Notion Export Error Modal -->
+  {#if exportErrorMsg}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity">
+      <div class="bg-[#111827] border border-slate-700 rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all">
+        <div class="p-6 text-center">
+          <div class="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
+            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2 tracking-wide">Export Failed</h3>
+          <p class="text-slate-400 text-sm mb-6">{exportErrorMsg}</p>
+          
+          <button 
+            onclick={() => { exportErrorMsg = null; }}
+            class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase tracking-wider text-xs py-3 rounded-lg transition-colors border border-slate-600 cursor-pointer"
+          >
+            DISMISS
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>

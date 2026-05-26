@@ -4,8 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.routes import status, mode
-from api.routes import actions, context
+from api.routes import actions, context, session
 from api.websockets import guidance as ws_guidance
+from api.websockets import router as ws_router
 
 from core.config import settings
 from core.errors import handle_exception  # ✅ NEW
@@ -74,9 +75,11 @@ except Exception as e:
 # Action log and session context endpoints
 app.include_router(actions.router, prefix="/api/v1")
 app.include_router(context.router, prefix="/api/v1")
+app.include_router(session.router, prefix="/api/v1")
 
 # WebSocket endpoints (no prefix — WS routes use the path as-is)
 app.include_router(ws_guidance.router)
+app.include_router(ws_router.router)
 
 # Alert suppression endpoints 
 app.include_router(suppression.router, prefix="/api/v1")

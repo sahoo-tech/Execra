@@ -27,6 +27,8 @@ class Settings:
     LLM_BACKEND: str = "openai"
     OPENAI_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
+    NOTION_API_KEY: str = ""
+    NOTION_PARENT_PAGE_ID: str = ""
 
     # Security
     ENCRYPTION_KEY: str = ""
@@ -90,6 +92,10 @@ class Settings:
             self.OPENAI_API_KEY = val
         if val := os.getenv("GEMINI_API_KEY"):
             self.GEMINI_API_KEY = val
+        if val := os.getenv("NOTION_API_KEY"):
+            self.NOTION_API_KEY = val
+        if val := os.getenv("NOTION_PARENT_PAGE_ID"):
+            self.NOTION_PARENT_PAGE_ID = val
         # Security
         if val := os.getenv("ENCRYPTION_KEY"):
             self.ENCRYPTION_KEY = val

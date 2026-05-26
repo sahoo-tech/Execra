@@ -156,6 +156,11 @@ The SvelteKit dashboard provides a futuristic UI showing real-time telemetry, li
 - ⚠️ Uncertainty flagging
 - 🐢 Safe Mode | ⚡ Expert Mode
 
+### 🔗 7. Integrations & Export
+- 📝 Export session traces directly to **Notion**
+- 🔗 Auto-generate shareable execution reports
+- 💾 Persistent AI action logs
+
 </td>
 </tr>
 </table>
@@ -648,6 +653,19 @@ npm install
 cd ..
 ```
 
+### Notion Integration Setup (Optional)
+
+To enable exporting your Execra sessions to a Notion page, you need to configure your API keys and grant access to your workspace:
+
+1. Go to [Notion Integrations](https://www.notion.so/my-integrations) and create a new internal integration.
+2. Copy the **Internal Integration Secret**.
+3. Create a `.env` file in the root directory (you can copy from `.env.example`).
+4. Set the `NOTION_API_KEY` variable in your `.env` file to the integration secret you copied.
+5. Create a target page in your Notion workspace to store the session logs.
+6. Copy the **Page ID** from the page URL (the 32-character string at the end) and set it as `NOTION_PARENT_PAGE_ID` in your `.env` file.
+7. **Crucial Step:** Open the target page in Notion. Click the **`...` (three dots)** menu in the top right corner, click on **Add connections**, search for your integration's name, and click on it to grant the integration content access to this page. Without this, exports will fail with a 404 error.
+
+
 ### Running the Services Locally
 
 #### 1. Start the FastAPI Backend
@@ -819,6 +837,9 @@ F --> G
 ```
 
 ---
+
+> [!IMPORTANT]
+> **Please read our full [Contribution Guidelines (CONTRIBUTING.md)](CONTRIBUTING.md)** before writing any code. It contains essential details on local setup, our branching strategy, coding standards, and how GSSoC points are awarded.
 
 ### 📝 Step-by-Step Contribution Guide
 

@@ -124,6 +124,32 @@ class ActionLogger:
             )
             for row in rows
         ]
+
+    async def get_actions_by_session(self, session_id: str) -> list[ActionRecord]:
+        """Fetch all actions for a specific session_id, ordered by timestamp ascending."""
+        await self._init_db()
+
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute("""
+                SELECT * FROM action_log
+                WHERE session_id = ?
+                ORDER BY timestamp ASC
+            """, (session_id,))
+            rows = await cursor.fetchall()
+
+        return [
+            ActionRecord(
+                id=row[0],
+                session_id=row[1],
+                timestamp=datetime.fromisoformat(row[2]),
+                type=row[3],
+                description=row[4],
+                domain=row[5],
+                was_guided=bool(row[6]),
+                guidance_confidence=row[7]
+            )
+            for row in rows
+        ]
     async def clear_session(self, session_id: str) -> None:
         """Delete all actions for the session from SQLite and clear the in-memory stack."""
         await self._init_db()  # ensure table exists
