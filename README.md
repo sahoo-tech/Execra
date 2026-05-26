@@ -74,7 +74,7 @@ Traditional Workflow:        Execra Workflow:
 
 ### Real-Time Monitoring Dashboard
 
-The SvelteKit dashboard provides a futuristic UI showing real-time telemetry, live action logs, active WebSocket connection status, and guidance feedback:
+The SvelteKit dashboard provides a futuristic UI showing real-time telemetry, live action logs, active WebSocket connection status, and guidance feedback. It also includes a **Session Summary Report Generator** to export detailed markdown reports of your execution sessions.
 
 ![Execra Monitoring Dashboard Preview](docs/images/dashboard_preview.png)
 
@@ -133,6 +133,7 @@ The SvelteKit dashboard provides a futuristic UI showing real-time telemetry, li
 - 🔴 Real-time error detection
 - 📡 Adapt instructions to user progress
 - 🔮 Predict consequences before action
+- 📝 Auto-generate Session Summary Reports
 
 </td>
 <td width="50%" valign="top">

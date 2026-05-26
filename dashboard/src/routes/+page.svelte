@@ -9,6 +9,13 @@
   let isSendingAction = $state(false);
   let isUndoingAction = $state(false);
 
+  // Session Report Modal State
+  let showReportModal = $state(false);
+  let reportMarkdown = $state<string | null>(null);
+  let isFetchingReport = $state(false);
+  let reportSessionIdInput = $state('');
+  let reportError = $state<string | null>(null);
+
   // Form inputs for simulating a new action
   let simType = $state('user_click');
   let simDesc = $state('Clicked dashboard simulation button');
@@ -97,6 +104,41 @@
     }
   }
 
+  // Fetch session summary report
+  async function fetchReport(sessionId: string) {
+    if (!sessionId.trim()) return;
+    try {
+      isFetchingReport = true;
+      reportError = null;
+      reportMarkdown = null;
+      showReportModal = true;
+      const res = await fetch(`http://127.0.0.1:8000/api/v1/session/${encodeURIComponent(sessionId)}/summary.md`);
+      if (res.status === 404) {
+        throw new Error(`Session ${sessionId} not found or has no actions.`);
+      }
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      reportMarkdown = await res.text();
+    } catch (err: any) {
+      console.error('Failed to fetch session report:', err);
+      reportError = err.message || 'Failed to fetch session report';
+    } finally {
+      isFetchingReport = false;
+    }
+  }
+
+  function downloadReport() {
+    if (!reportMarkdown) return;
+    const blob = new Blob([reportMarkdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `session_report_${reportSessionIdInput || 'export'}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   onMount(() => {
     wsService.connect();
     fetchHistory();
@@ -128,6 +170,13 @@
     }
     
     return combined;
+  });
+
+  $effect(() => {
+    const actions = allActions();
+    if (actions.length > 0 && !reportSessionIdInput) {
+      reportSessionIdInput = actions[actions.length - 1].session_id;
+    }
   });
 
   // Stats derivations
@@ -419,6 +468,29 @@
           </h2>
 
           <div class="space-y-3">
+            <!-- Session Report Generator -->
+            <div class="flex flex-col space-y-2 p-3 bg-[#0b1020]/60 border border-slate-800 rounded-md">
+              <div class="flex items-center justify-between">
+                <div class="text-xs">
+                  <p class="font-bold text-slate-300">Session Summary</p>
+                  <p class="text-[10px] text-slate-500 mt-0.5">Generate markdown report</p>
+                </div>
+                <button 
+                  onclick={() => fetchReport(reportSessionIdInput)} 
+                  disabled={isFetchingReport || !reportSessionIdInput}
+                  class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs px-3.5 py-1.5 rounded font-semibold transition cursor-pointer disabled:opacity-50"
+                >
+                  {isFetchingReport ? 'LOADING...' : 'GENERATE'}
+                </button>
+              </div>
+              <input 
+                type="text" 
+                bind:value={reportSessionIdInput} 
+                placeholder="Enter session_id..."
+                class="w-full bg-[#111827] border border-slate-800 text-slate-300 text-xs px-3 py-1.5 rounded-md focus:border-slate-700 outline-none mt-1"
+              />
+            </div>
+
             <div class="flex items-center justify-between p-3 bg-[#0b1020]/60 border border-slate-800 rounded-md">
               <div class="text-xs">
                 <p class="font-bold text-slate-300">Undo Last Action</p>
@@ -473,3 +545,55 @@
     </section>
   </main>
 </div>
+
+<!-- Session Report Modal -->
+{#if showReportModal}
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+    <div class="bg-[#111827] border border-slate-700 rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
+        <h3 class="font-bold text-slate-200 tracking-wider">SESSION REPORT</h3>
+        <button 
+          onclick={() => showReportModal = false}
+          class="text-slate-500 hover:text-slate-300 transition cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto flex-grow bg-[#0b1020]">
+        {#if isFetchingReport}
+          <div class="flex flex-col items-center justify-center h-40 space-y-3 text-slate-500">
+            <span class="border-2 border-slate-700 border-t-emerald-500 rounded-full h-8 w-8 animate-spin"></span>
+            <span class="text-xs uppercase tracking-widest font-semibold">Generating Report...</span>
+          </div>
+        {:else if reportError}
+          <div class="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {reportError}
+          </div>
+        {:else if reportMarkdown}
+          <pre class="whitespace-pre-wrap font-mono text-sm text-slate-300 leading-relaxed">{reportMarkdown}</pre>
+        {/if}
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex justify-end space-x-3">
+        {#if reportMarkdown}
+          <button 
+            onclick={downloadReport}
+            class="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 px-4 py-2 rounded-md text-xs font-bold tracking-wider transition cursor-pointer"
+          >
+            DOWNLOAD .MD
+          </button>
+        {/if}
+        <button 
+          onclick={() => showReportModal = false}
+          class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-4 py-2 rounded-md text-xs font-bold tracking-wider transition cursor-pointer"
+        >
+          CLOSE
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
