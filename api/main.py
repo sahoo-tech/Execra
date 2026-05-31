@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import actions, context
 
+from api.routes import actions, context
+from core.hybrid.action_logger import action_logger
 
 app = FastAPI(title="Execra API", version="0.1.0", description="Execra backend API")
 
@@ -18,6 +19,7 @@ app.add_middleware(
 # Startup event
 @app.on_event("startup")
 async def startup_event():
+    await action_logger.load()
     print("Execra API starting...")
 
 

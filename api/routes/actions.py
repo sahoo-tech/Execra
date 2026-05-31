@@ -34,15 +34,15 @@ def get_actions(limit: int = Query(20, ge=1), offset: int = Query(0, ge=0)):
 
 
 @router.post("/actions")
-def create_action(payload: ActionCreate):
+async def create_action(payload: ActionCreate):
     action = ActionRecord(**payload.dict())
-    action_logger.record_action(action)
+    await action_logger.record_action(action)
     return {"action": action.to_dict()}
 
 
 @router.post("/actions/undo")
-def undo_last_action():
-    action = action_logger.undo_last()
+async def undo_last_action():
+    action = await action_logger.undo_last()
     if action is None:
         raise HTTPException(status_code=409, detail="Nothing in the undo stack")
 
