@@ -3,14 +3,11 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import status, mode
-from api.routes import actions, context
+from api.routes import actions, context, mode, status, suppression
 from api.websockets import guidance as ws_guidance
-
 from core.config import settings
-from core.errors import handle_exception  # ✅ NEW
-
-from api.routes import suppression
+from core.errors import handle_exception
+from core.hybrid.action_logger import action_logger
 
 logger = logging.getLogger(__name__)
 
@@ -26,57 +23,37 @@ app.add_middleware(
 )
 
 
-# Startup event
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Execra API starting...")
+    # Restore persisted action history and undo state from SQLite.
+    await action_logger.load()
     from api.websockets.router import broadcast_action_log
-    from core.hybrid.action_logger import action_logger
     action_logger.register_callback(broadcast_action_log)
+    logger.info("Execra API starting...")
 
 
-# Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("Execra API shutting down...")
     from api.websockets.router import broadcast_action_log
-    from core.hybrid.action_logger import action_logger
     action_logger.unregister_callback(broadcast_action_log)
+    logger.info("Execra API shutting down...")
 
 
-# Root endpoint
 @app.get("/")
 def read_root():
     try:
-        return {
-            "status": "success",
-            "data": {
-                "message": "Execra is running",
-                "version": "0.1.0"
-            }
-        }
+        return {"status": "success", "data": {"message": "Execra is running", "version": "0.1.0"}}
     except Exception as e:
         return handle_exception(e)
 
-
-# Routes (wrapped safely)
 
 try:
     app.include_router(status.router, prefix="/api/v1")
     app.include_router(mode.router, prefix="/api/v1")
     app.include_router(actions.router, prefix="/api/v1")
     app.include_router(context.router, prefix="/api/v1")
-
 except Exception as e:
     handle_exception(e)
 
-
-# Action log and session context endpoints
-app.include_router(actions.router, prefix="/api/v1")
-app.include_router(context.router, prefix="/api/v1")
-
-# WebSocket endpoints (no prefix — WS routes use the path as-is)
 app.include_router(ws_guidance.router)
-
-# Alert suppression endpoints 
 app.include_router(suppression.router, prefix="/api/v1")
