@@ -1,0 +1,10 @@
+{
+  "screen_text": "class Test(:",
+  "trace_summary": "Class declaration malformed",
+  "expected_guidance_keywords": [
+    "class",
+    "syntax",
+    "parenthesis"
+  ],
+  "expected_trust_level": "moderate"
+}

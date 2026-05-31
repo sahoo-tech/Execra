@@ -1,0 +1,17 @@
+name: "Null Check Warning"
+version: "1.0.0"
+trigger_keywords:
+  - "null"
+  - "undefined"
+  - "NoneType"
+  - "null pointer"
+trigger_objects:
+  - "error_dialog"
+  - "crash_screen"
+severity: "warning"
+instruction_template: >
+  A null or undefined value has been detected.
+  Please check your variable assignments and
+  ensure all values are properly initialized
+  before use.
+enabled: true

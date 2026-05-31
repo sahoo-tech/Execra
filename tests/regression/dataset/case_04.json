@@ -1,0 +1,10 @@
+{
+  "screen_text": "x = undefined_variable",
+  "trace_summary": "NameError raised during execution",
+  "expected_guidance_keywords": [
+    "variable",
+    "define",
+    "nameerror"
+  ],
+  "expected_trust_level": "moderate"
+}

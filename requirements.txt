@@ -7,7 +7,8 @@ opencv-python
 pytesseract
 ultralytics
 openai
-google-generativeai
+google-genai
+watchdog
 langchain
 aiosqlite
 redis
@@ -15,3 +16,6 @@ plyer
 python-dotenv
 numpy
 pydantic
+cryptography
+scikit-learn
+joblib

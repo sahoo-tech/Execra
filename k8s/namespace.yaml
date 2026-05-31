@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: execra
+  labels:
+    app.kubernetes.io/name: execra
+    app.kubernetes.io/part-of: execra-platform

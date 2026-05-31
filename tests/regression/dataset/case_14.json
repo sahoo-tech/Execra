@@ -1,0 +1,10 @@
+{
+  "screen_text": "SELECT * FROM users WHERE id = '\" + user_id + \"'",
+  "trace_summary": "Potential SQL injection risk",
+  "expected_guidance_keywords": [
+    "sql",
+    "parameterized",
+    "injection"
+  ],
+  "expected_trust_level": "low"
+}

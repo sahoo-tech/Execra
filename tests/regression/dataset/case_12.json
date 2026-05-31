@@ -1,0 +1,10 @@
+{
+  "screen_text": "user_input = eval(data)",
+  "trace_summary": "Unsafe evaluation detected",
+  "expected_guidance_keywords": [
+    "security",
+    "eval",
+    "unsafe"
+  ],
+  "expected_trust_level": "low"
+}

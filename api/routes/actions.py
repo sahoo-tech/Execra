@@ -8,43 +8,37 @@ from core.hybrid.action_logger import ActionRecord, action_logger
 router = APIRouter()
 
 
-class ActionCreate(BaseModel):
-    type: str
-    description: str
-    domain: str = "digital"
-    session_id: str = "default"
-    was_guided: bool = False
-    guidance_confidence: float = 0.0
-    is_undoable: bool = False
-    undo_instruction: Optional[str] = None
-
-
 class ReplayRequest(BaseModel):
     session_id: Optional[str] = None
     speed: float = 1.0
 
 
 @router.get("/actions")
-def get_actions(limit: int = Query(20, ge=1), offset: int = Query(0, ge=0)):
-    actions = action_logger.list_actions(limit=limit, offset=offset)
+async def get_actions(limit: int = Query(20, ge=1), offset: int = Query(0, ge=0)):
+    actions = await action_logger.get_history(limit=limit, offset=offset)
     return {
-        "total": action_logger.total_actions(),
-        "actions": [action.to_dict() for action in actions],
+        "total": len(actions),
+        "actions": [a.to_dict() for a in actions],
     }
 
 
 @router.post("/actions")
-async def create_action(payload: ActionCreate):
-    action = ActionRecord(**payload.dict())
-    await action_logger.record_action(action)
-    return {"action": action.to_dict()}
+async def create_action(action: ActionRecord):
+    await action_logger.log_action(action)
+    return {
+        "message": "Action logged successfully.",
+        "action": action.to_dict(),
+    }
 
 
 @router.post("/actions/undo")
 async def undo_last_action():
     action = await action_logger.undo_last()
     if action is None:
-        raise HTTPException(status_code=409, detail="Nothing in the undo stack")
+        raise HTTPException(
+            status_code=409,
+            detail="Nothing to undo. Action log is empty.",
+        )
 
     return {
         "message": "Last action undone successfully.",

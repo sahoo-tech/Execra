@@ -1,0 +1,10 @@
+{
+  "screen_text": "password = '123456'",
+  "trace_summary": "Weak credential usage detected",
+  "expected_guidance_keywords": [
+    "password",
+    "security",
+    "strong"
+  ],
+  "expected_trust_level": "low"
+}
